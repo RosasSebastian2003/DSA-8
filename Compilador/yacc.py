@@ -329,11 +329,11 @@ def p_assign(p):
     p[0] = ('assign', p[1], p[3])
 
 # -------------------------------------------------------
-# Manejo de errores 
-def p_error(p): 
-    if p: 
-        print(f"Syntax error at token {p.type} ('{p.value}') on line {p.lineo}")
-    else: 
-        print("SYNTAX ERROR")
+# Manejo de errores
+def p_error(p):
+    if p:
+        print(f"Syntax error at token {p.type} ('{p.value}') on line {p.lineno}")
+    else:
+        print("Syntax error: Unexpected end of file (EOF)")
 
 parser = yacc.yacc()
