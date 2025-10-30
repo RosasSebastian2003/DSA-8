@@ -36,7 +36,9 @@ tokens = [
     'LOWER_THAN',
     'L_PARENTHESIS',
     'R_PARENTHESIS',
-    'CNT_STRING'
+    'CNT_STRING',
+    'L_SBRACKET',
+    'R_SBRACKET'
 ] + list(reserved_namespace.values()) # Concatenamos la lista de palabras reservadas a la lista de tokens
 
 # Expresiones regulares para tokens sencillos, las palabras reservadas se definen por separado mediante un diccionario, r es un literal para raw string 
@@ -59,6 +61,9 @@ t_LOWER_THAN = r'<'
 
 t_L_PARENTHESIS = r'\('
 t_R_PARENTHESIS = r'\)'
+
+t_L_SBRACKET = r'\['
+t_R_SBRACKET = r'\]'
 
 #Expresiones regulares mas complejas 
 #Como la expresion regular es la primera linea de la funcion, y no esta asignada a nada, Python trata a esta linea como un docstring, PLY lee el docstring utilizando a t_INT.__doc__ y lo usa como expresion regular
