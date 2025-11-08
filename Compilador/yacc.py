@@ -1,12 +1,17 @@
 import ply.yacc as yacc
 from lex import tokens
+from semantic_analyzer import SemanticAnalyzer
 
-# Simbolo de inicio
+# Símbolo de inicio
 start = 'program'
 
-# <VARS>
-# Las expresiones factorizadas se deben de separar en forma de otras funciones
+# Analizador semántico global
+semantic_analyzer = SemanticAnalyzer()
 
+# Almacenamos a los tipos en un diccionario durante el parsing, almacenando al id del nodo como llave y al tipo de dato como valor
+expression_types = {}
+
+# <VARS>
 def p_vars(p):
     'vars : VAR var_list'
     p[0] = ('vars', p[2])
@@ -14,6 +19,16 @@ def p_vars(p):
 # <B>
 def p_var_list(p):
     'var_list : id_list COLON type SEMI_COLON var_list_prime'
+    # Declaramos todas las variables de id_list
+    var_type = p[3]
+    id_list = p[1]
+    
+    # Determinar si la variableglobal o local
+    is_global = (semantic_analyzer.current_function is None)
+    
+    for var_name in id_list:
+        semantic_analyzer.np_declare_variable(var_name, var_type, is_global)
+    
     p[0] = [('var_declaration', p[1], p[3])] + p[5]
 
 # <B'>
@@ -24,7 +39,7 @@ def p_var_list_prime(p):
         p[0] = p[1]
     else:
         p[0] = []
-    
+        
 # <A>
 def p_id_list(p):
     'id_list : ID id_list_prime'
@@ -41,31 +56,52 @@ def p_id_list_prime(p):
         
 # -------------------------------------------------------
 # <EXP>
-# Cambie mi enfoque de factorizacion a recursion izquierda debido a que el desarrollo del enfoque de factorizacion era mas complicado que el de recursion izquierda
 def p_exp(p):
     '''exp : exp PLUS termino
            | exp MINUS termino
            | termino'''
     if len(p) == 4:
-        p[0] = (p[2], p[1], p[3]) # Construccion del AST
+        # Operacion binaria
+        operator = p[2]
+        left_type = expression_types.get(id(p[1]))
+        right_type = expression_types.get(id(p[3]))
+        
+        # Verificar operacion
+        result_type = semantic_analyzer.np_check_operation(
+            operator, p[1], p[3], left_type, right_type
+        )
+        
+        p[0] = (p[2], p[1], p[3])
+        expression_types[id(p[0])] = result_type
     else:
         p[0] = p[1]
-        
-# -------------------------------------------------------
+        expression_types[id(p[0])] = expression_types.get(id(p[1]))
 
+
+# -------------------------------------------------------
 # <TERMINO>
-# Cambie mi enfoque de factorizacion a recursion izquierda debido a que el desarrollo del enfoque de factorizacion era mas complicado que el de recursion izquierda
 def p_termino(p):
     '''termino : termino ASTERISK factor
                | termino FORWARD_SLASH factor
                | factor'''
     if len(p) == 4:
-        p[0] = (p[2], p[1], p[3]) # Construccion del AST
+        # Operacion binaria
+        operator = p[2]
+        left_type = expression_types.get(id(p[1]))
+        right_type = expression_types.get(id(p[3]))
+        
+        # Verificar operacion
+        result_type = semantic_analyzer.np_check_operation(
+            operator, p[1], p[3], left_type, right_type
+        )
+        
+        p[0] = (p[2], p[1], p[3])
+        expression_types[id(p[0])] = result_type
     else:
         p[0] = p[1]
+        expression_types[id(p[0])] = expression_types.get(id(p[1]))
 
 # -------------------------------------------------------
-
 # <Type>
 def p_type(p):
     '''type : INT
@@ -78,22 +114,35 @@ def p_empty(p):
     pass 
 
 # -------------------------------------------------------
-
 # <CTE>
 def p_cte(p):
     '''cte : CNT_INT 
            | CNT_FLOAT'''
     p[0] = p[1]
+    # Guardar el tipo de literal
+    literal_type = semantic_analyzer.get_literal_type(p[1])
+    expression_types[id(p[0])] = literal_type
 
 # -------------------------------------------------------
-
 # <EXPRESSION>
 def p_expression(p):
     'expression : exp expression_prime'
     if p[2] is not None:
-        p[0] = (p[2][0], p[1], p[2][1])  
+        # Hay operador relacional
+        operator, right_operand = p[2]
+        left_type = expression_types.get(id(p[1]))
+        right_type = expression_types.get(id(right_operand))
+        
+        # Verificar operacion relacional
+        result_type = semantic_analyzer.np_check_operation(
+            operator, p[1], right_operand, left_type, right_type
+        )
+        
+        p[0] = (operator, p[1], right_operand)
+        expression_types[id(p[0])] = result_type
     else:
         p[0] = p[1]
+        expression_types[id(p[0])] = expression_types.get(id(p[1]))
 
 # <EXPRESSION'>
 def p_expression_prime(p):
@@ -107,15 +156,39 @@ def p_expression_prime(p):
         p[0] = None
 
 # -------------------------------------------------------
-
 # <F_CALL>
 def p_f_call(p):
     '''f_call : ID L_PARENTHESIS R_PARENTHESIS SEMI_COLON
               | ID L_PARENTHESIS expression_list R_PARENTHESIS SEMI_COLON'''
-    if len(p) == 5:
-        p[0] = ('f_call', p[1], [])
+    
+    func_name = p[1]
+    
+    # Verificamos que la funcion exista
+    func = semantic_analyzer.np_start_function_call(func_name)
+    
+    # Continuar si la función existe
+    if func is not None:
+        if len(p) == 5:
+            # Sin argumentos
+            semantic_analyzer.np_check_function_call(func_name, [])
+            p[0] = ('f_call', p[1], [])
+        else:
+            # Con argumentos
+            arg_list = p[3]
+            # Obtenemos los tipos de los argumentos
+            arg_types = [expression_types.get(id(arg)) for arg in arg_list]
+            # Filtramos valores nulos
+            arg_types = [t for t in arg_types if t is not None]
+            
+            semantic_analyzer.np_check_function_call(func_name, arg_types)
+            p[0] = ('f_call', p[1], p[3])
     else:
-        p[0] = ('f_call', p[1], p[3])
+        # Creamos el nodo aunque la funcion no exista
+        if len(p) == 5:
+            p[0] = ('f_call', p[1], [])
+        else:
+            p[0] = ('f_call', p[1], p[3])
+        
 # <A>
 def p_expression_list(p):
     '''expression_list : expression expression_list_prime'''
@@ -141,10 +214,9 @@ def p_body(p):
     if len(p) == 3:
         p[0] = ('body', [])
     else:
-        # Body con statements: { ... }
         p[0] = ('body', p[2])
 
-# <A> (statement_list) → STATEMENT A'
+# <A> (statement_list)
 def p_statement_list(p):
     '''statement_list : statement statement_list_prime'''
     if p[2] is not None and len(p[2]) > 0:
@@ -152,14 +224,14 @@ def p_statement_list(p):
     else:
         p[0] = [p[1]]
 
-# <A'> (statement_list_prime) → ε | A
+# <A'> (statement_list_prime)
 def p_statement_list_prime(p):
     '''statement_list_prime : statement_list
                             | empty'''
     if len(p) == 2 and p[1] is not None:
         p[0] = p[1]
     else:
-        p[0] = []
+        p[0] = []        
         
 # -------------------------------------------------------
 # <STATEMENT>
@@ -177,13 +249,6 @@ def p_condition(p):
     """condition : IF L_PARENTHESIS expression R_PARENTHESIS body SEMI_COLON
                  | IF L_PARENTHESIS expression R_PARENTHESIS body ELSE body SEMI_COLON"""
     if len(p) == 7:
-        # if sin else
-        # p[1] = IF
-        # p[2] = (
-        # p[3] = expression
-        # p[4] = )
-        # p[5] = body
-        # p[6] = ;
         p[0] = ('if', p[3], p[5], None)
     else:
         # if con else
@@ -201,7 +266,6 @@ def p_condition(p):
 # <CYCLE>
 def p_cycle(p):
     'cycle : WHILE L_PARENTHESIS expression R_PARENTHESIS DO body SEMI_COLON'
-    
     p[0] = ('while', p[3], p[6])
     
 # -------------------------------------------------------
@@ -239,15 +303,30 @@ def p_factor(p):
               | ID
               | cte"""
     if len(p) == 4:
+        # Parentesis
         p[0] = p[2]
+        expression_types[id(p[0])] = expression_types.get(id(p[2]))
     
     elif len(p) == 3:
+        # Unario
         if p[1] == '+':
             p[0] = p[2]
+            expression_types[id(p[0])] = expression_types.get(id(p[2]))
         else: 
+            # Menos unario
             p[0] = ('unary_minus', p[2])
+            expression_types[id(p[0])] = expression_types.get(id(p[2]))
     else: 
+        # ID o constante
         p[0] = p[1]
+        
+        if isinstance(p[1], str):
+            # Si es ID, verificar que existe
+            var_type = semantic_analyzer.np_check_variable(p[1])
+            expression_types[id(p[0])] = var_type
+        else:
+            # Si es constante, ya se asigno en p_cte
+            expression_types[id(p[0])] = expression_types.get(id(p[1]))
         
 # -------------------------------------------------------
 # <FUNCS>
@@ -257,6 +336,11 @@ def p_funcs(p):
              | VOID ID L_PARENTHESIS R_PARENTHESIS L_SBRACKET vars body R_SBRACKET SEMI_COLON
              | VOID ID L_PARENTHESIS R_PARENTHESIS L_SBRACKET body R_SBRACKET SEMI_COLON"""
     
+    func_name = p[2]
+    
+    # Finalizar funcion
+    semantic_analyzer.np_end_function(func_name)
+    
     if len(p) == 11:
         p[0] = ('func', p[2], p[4], p[7], p[8])
     elif len(p) == 10:
@@ -264,15 +348,28 @@ def p_funcs(p):
             p[0] = ('func', p[2], [], p[6], p[7])
         else:
             p[0] = ('func', p[2], p[4], None, p[7])
+    else:
         p[0] = ('func', p[2], [], None, p[6])
+
+
+# Helper para inicio de funcion, se llama antes de procesar a los parametros
+def np_aux_start_function(func_name):
+    semantic_analyzer.np_start_function(func_name, 'void')
 
 # <A> 
 def p_param_list(p):
     '''param_list : ID COLON type param_list_prime'''
+    # Agregar parametro
+    param_name = p[1]
+    param_type = p[3]
+    
+    semantic_analyzer.np_add_parameter(param_name, param_type)
+    
     if p[4] is not None and len(p[4]) > 0:
         p[0] = [(p[1], p[3])] + p[4]
     else:
         p[0] = [(p[1], p[3])]
+
 
 # <A'> 
 def p_param_list_prime(p):
@@ -290,6 +387,10 @@ def p_program(p):
                | PROGRAM ID SEMI_COLON func_list MAIN body END
                | PROGRAM ID SEMI_COLON vars MAIN body END
                | PROGRAM ID SEMI_COLON MAIN body END"""
+    
+    # Iniciar programa
+    program_name = p[2]
+    semantic_analyzer.np_start_program(program_name)
     
     if len(p) == 9:
         p[0] = ('program', p[2], p[4], p[5], p[7])
@@ -316,17 +417,25 @@ def p_func_list_prime(p):
     """func_list_prime : func_list
                        | empty"""
     if len(p) == 2 and p[1] is not None:
-        # Recursión: más funciones
+        # Recursion, mas funciones
         p[0] = p[1]
     else:
-        # Epsilon: fin de la lista
         p[0] = []
+
 
 # -------------------------------------------------------
 # <ASSIGN>
 def p_assign(p):
     'assign : ID EQUAL expression SEMI_COLON'
+    
+    var_name = p[1]
+    expr_type = expression_types.get(id(p[3]))
+    
+    # Verificar asignacion
+    semantic_analyzer.np_check_assignment(var_name, expr_type)
+    
     p[0] = ('assign', p[1], p[3])
+
 
 # -------------------------------------------------------
 # Manejo de errores
@@ -336,4 +445,45 @@ def p_error(p):
     else:
         print("Syntax error: Unexpected end of file (EOF)")
 
+
+# Crear el parser
 parser = yacc.yacc()
+
+
+def parse_program(program_text):
+    """
+    Parsea un programa y realiza análisis semántico.
+    
+    Args:
+        program_text (str): Código fuente del programa
+        
+    Returns:
+        tuple: (AST, tiene_errores)
+    """
+    global semantic_analyzer, expression_types
+    
+    # Reiniciar analizador semántico
+    semantic_analyzer.reset()
+    expression_types = {}
+    
+    # Parsear
+    result = parser.parse(program_text)
+    
+    # Verificar errores
+    has_errors = semantic_analyzer.has_errors()
+    
+    return result, has_errors
+
+
+def print_analysis_results():
+    """Imprime los resultados del análisis semántico"""
+    semantic_analyzer.print_symbol_tables()
+    
+    if semantic_analyzer.has_errors():
+        semantic_analyzer.print_errors()
+        return False
+    else:
+        print("\n" + "="*60)
+        print("✓ ANÁLISIS SEMÁNTICO COMPLETADO SIN ERRORES")
+        print("="*60)
+        return True
