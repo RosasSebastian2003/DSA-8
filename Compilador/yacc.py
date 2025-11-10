@@ -1,6 +1,7 @@
 import ply.yacc as yacc
 from lex import tokens
 from semantic_analyzer import SemanticAnalyzer
+from intermediate_code_generator import quad_gen
 
 # Símbolo de inicio
 start = 'program'
