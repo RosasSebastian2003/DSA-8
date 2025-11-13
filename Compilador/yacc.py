@@ -1,7 +1,11 @@
 import ply.yacc as yacc
 from lex import tokens
 from semantic_analyzer import SemanticAnalyzer
-from intermediate_code_generator import quad_gen
+from intermediate_code_generator import intermediate_code_generator
+from semantic_cube import semantic_cube
+
+# NOTOTOTOTA
+# El primer indice siempre representa al resultado de la gramatica, por ende, podemos asignar cada token a un indice segun su orden de izquierda a derecha
 
 # Símbolo de inicio
 start = 'program'
@@ -64,6 +68,13 @@ def p_exp(p):
     if len(p) == 4:
         # Operacion binaria
         operator = p[2]
+        
+        # Metemos al operador a la cola antes de procesar al termino 
+        intermediate_code_generator.push_operator(operator=operator)
+        
+        # Generamos al cuadruplo
+        quad = intermediate_code_generator.generate_arithmetic_operation(semantic_cube=semantic_cube)
+        
         left_type = expression_types.get(id(p[1]))
         right_type = expression_types.get(id(p[3]))
         
@@ -88,6 +99,13 @@ def p_termino(p):
     if len(p) == 4:
         # Operacion binaria
         operator = p[2]
+        
+        # Metemos al operador a la pila de opeadores
+        intermediate_code_generator.push_operator(operator=operator)
+        
+        # Generamos un cuadruplo 
+        quad = intermediate_code_generator.generate_arithmetic_operation(semantic_cube=semantic_cube)
+        
         left_type = expression_types.get(id(p[1]))
         right_type = expression_types.get(id(p[3]))
         
@@ -129,6 +147,7 @@ def p_cte(p):
 def p_expression(p):
     'expression : exp expression_prime'
     if p[2] is not None:
+        left_operand = p[1]
         # Hay operador relacional
         operator, right_operand = p[2]
         left_type = expression_types.get(id(p[1]))
@@ -138,6 +157,11 @@ def p_expression(p):
         result_type = semantic_analyzer.np_check_operation(
             operator, p[1], right_operand, left_type, right_type
         )
+        
+        # Generamos un cuadruplo para procesar operadores relacionales
+        temp = intermediate_code_generator.add_temp()
+        intermediate_code_generator.add_quad(operator=operator,arg1=left_operand,arg2=right_operand,result=temp)
+        intermediate_code_generator.push_operand(operand=temp, operand_type=result_type)
         
         p[0] = (operator, p[1], right_operand)
         expression_types[id(p[0])] = result_type
@@ -250,6 +274,9 @@ def p_condition(p):
     """condition : IF L_PARENTHESIS expression R_PARENTHESIS body SEMI_COLON
                  | IF L_PARENTHESIS expression R_PARENTHESIS body ELSE body SEMI_COLON"""
     if len(p) == 7:
+        # If sin else
+       #intermediate_code_generator.end_if()
+        
         p[0] = ('if', p[3], p[5], None)
     else:
         # if con else
@@ -261,6 +288,8 @@ def p_condition(p):
         # p[6] = ELSE
         # p[7] = body (else)
         # p[8] = ;
+        
+        #intermediate_code_generator.end_else()
         p[0] = ('if', p[3], p[5], p[7])         
                  
 # -------------------------------------------------------
@@ -305,15 +334,24 @@ def p_factor(p):
               | cte"""
     if len(p) == 4:
         # Parentesis
+        # Abrimos a los parentesis antes de procesar la gramatica
+        intermediate_code_generator.open_parenthesis()
         p[0] = p[2]
         expression_types[id(p[0])] = expression_types.get(id(p[2]))
+        intermediate_code_generator.close_parenthesis(semantic_cube=semantic_cube)
     
     elif len(p) == 3:
         # Unario
+        # No le generamos un cuadruplo ya que matematicamente no tiene un efecto
         if p[1] == '+':
             p[0] = p[2]
             expression_types[id(p[0])] = expression_types.get(id(p[2]))
         else: 
+            operand, operand_type = intermediate_code_generator.pop_operand()
+            temp = intermediate_code_generator.add_temp()
+            intermediate_code_generator.add_quad(operator="UMINUS", arg1=operand, arg2=None, result=temp)
+            intermediate_code_generator.push_operand(operand=temp, operand_type=operand_type)
+            
             # Menos unario
             p[0] = ('unary_minus', p[2])
             expression_types[id(p[0])] = expression_types.get(id(p[2]))
@@ -325,9 +363,16 @@ def p_factor(p):
             # Si es ID, verificar que existe
             var_type = semantic_analyzer.np_check_variable(p[1])
             expression_types[id(p[0])] = var_type
+            
+            # Empujamos a la pila de operandos
+            intermediate_code_generator.push_operand(operand=p[1], operand_type=var_type)
         else:
             # Si es constante, ya se asigno en p_cte
-            expression_types[id(p[0])] = expression_types.get(id(p[1]))
+            var_type = expression_types.get(id(p[1]))
+            expression_types[id(p[0])] = var_type
+            
+            # Empujamos a la pila de operandos
+            intermediate_code_generator.push_operand(operand=p[1], operand_type=var_type)
         
 # -------------------------------------------------------
 # <FUNCS>
@@ -435,6 +480,9 @@ def p_assign(p):
     # Verificar asignacion
     semantic_analyzer.np_check_assignment(var_name, expr_type)
     
+    # Generamos un cuadruplo
+    intermediate_code_generator.generate_assignation(var_name=var_name)
+    
     p[0] = ('assign', p[1], p[3])
 
 
@@ -449,42 +497,3 @@ def p_error(p):
 
 # Crear el parser
 parser = yacc.yacc()
-
-
-def parse_program(program_text):
-    """
-    Parsea un programa y realiza análisis semántico.
-    
-    Args:
-        program_text (str): Código fuente del programa
-        
-    Returns:
-        tuple: (AST, tiene_errores)
-    """
-    global semantic_analyzer, expression_types
-    
-    # Reiniciar analizador semántico
-    semantic_analyzer.reset()
-    expression_types = {}
-    
-    # Parsear
-    result = parser.parse(program_text)
-    
-    # Verificar errores
-    has_errors = semantic_analyzer.has_errors()
-    
-    return result, has_errors
-
-
-def print_analysis_results():
-    """Imprime los resultados del análisis semántico"""
-    semantic_analyzer.print_symbol_tables()
-    
-    if semantic_analyzer.has_errors():
-        semantic_analyzer.print_errors()
-        return False
-    else:
-        print("\n" + "="*60)
-        print("✓ ANÁLISIS SEMÁNTICO COMPLETADO SIN ERRORES")
-        print("="*60)
-        return True

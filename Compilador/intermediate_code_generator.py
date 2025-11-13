@@ -41,7 +41,7 @@ class IntermediateCodeGenerator:
     def pop_operand(self):
         if self.operand_stack and self.type_stack:
             operand = self.operand_stack.pop()
-            operand_type = self.type_stack.pop
+            operand_type = self.type_stack.pop()
             
             return operand, operand_type
 
@@ -195,13 +195,29 @@ class IntermediateCodeGenerator:
         
         current_position = self.get_current_position()
         self.fill_quad(position=gotof_pos, value=current_position)
+    
+    # Agregamos el operador de parentesis a la pila de operadores, este servira como flag al momento en que encontremos al parentesis de cierre
+    def open_parenthesis(self):
+        self.operator_stack.append("(")
+    
+    
+    def close_parenthesis(self, semantic_cube: SemanticCube):
+        # Iteramos a travez de la pila de operadores utilizando a "(" como flag,
+        # donde el punto neuralgico generate_arithmetic_operation toma y procesa a las operaciones dentro del parentesis 
+        # y consume a los operadores hasta llegar a la apertura del parentesis, donde se detendra la ejecucion del while
+        while self.operator_stack and self.peak_operator() != "(":
+            self.generate_arithmetic_operation(semantic_cube=semantic_cube)
+        
+        # Eliminamos a la apertura del parentesis de la pila de operadores
+        if self.operator_stack and self.peak_operator() == "(":
+            self.pop_operator()
         
     # Helpers
     def evaluate_nil_string(self, val):
         if not val:
-            return "-"
+            return " "
         else:
-            str(val)
+            return str(val)
         
     def print_quads(self):
         if not self.quads:
@@ -220,5 +236,7 @@ class IntermediateCodeGenerator:
         self.jump_stack.clear()
         
         self.temp_var_counter = 0
+        
 
-quad_gen = IntermediateCodeGenerator()
+
+intermediate_code_generator = IntermediateCodeGenerator()
