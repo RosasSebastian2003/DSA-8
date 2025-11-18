@@ -302,6 +302,8 @@ def p_cycle(p):
 # <PRINT>
 def p_print_stmt(p): 
     '''print_stmt : PRINT L_PARENTHESIS print_expression_list R_PARENTHESIS SEMI_COLON'''
+    # Cuadruplos para print
+    intermediate_code_generator.generate_print(len(p[3]))
     p[0] = ('print', p[3])
 
 # <A> (print_expression_list)

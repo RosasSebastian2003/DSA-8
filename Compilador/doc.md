@@ -704,3 +704,294 @@ El analisis semantico se integra en el parser yacc.py donde cada regla gramatica
 El analizador junta todos los errores encontrados sin parar el parseo, lo que permite mostrar multiples errores en una sola ejecucion, lo que facilita el debugging.
 
 Las tablas de simbolos se construyen durante el analisis, cuando se termina el parseo completo, se puede consultar el directorio de funciones para obtener informacion sobre todas las funciones y variables del programa, asi como la lista de errores encontrados.
+
+## Generacion de Cuadruplos 
+
+Genere una clase llamada IntermediateCodeGenerator con el fin de separar la logica de la generacion de cuadruplos, dentro de esta clase inclui un singleton con el fin de poder utilizar al mismo objeto de manera global, la clase se inicializa de la siguiente manera:
+```python 
+class IntermediateCodeGenerator:
+    def __init__(self):
+        self.quads = []
+        
+        # Pilas
+        self.operator_stack = []
+        self.operand_stack = []
+        
+        self.type_stack = []
+        
+        # Aqui guardamos el salto pendiente previo a evaluar una condicion (if, while)
+        self.jump_stack = [] 
+        
+        self.temp_var_counter = 0 # Contador de variables temporales
+```
+
+Donde se inicializan las pias para los cuadruplos, operadores, operandos, tipos y saltos (cuadruplos que tienen que ser completados despues de que se define el resultado de la condicion del if o while).
+
+Es importante aclarar que las variables temporales no cuentan con una pila propia ya que estas se almacenan dentro de la pila de operandos y su tipo se almacena dentro de la pila de operadores (una variable temporal representa el resultado de una operacion, este tipo es asignado por el cubo semantico), por ello, tenemos un contador que facilita la generacion de las mismas.
+
+La clase cuenta con metodos que permiten realizar acciones CRUD con los atributos de la clase:
+
+```python
+    # Agregar un operador a la pila
+    def push_operator(self, operator):
+        self.operator_stack.append(operator)
+    
+    # Eliminamos uno de los operadores de la fila de operadores, primero revizamos si existe
+    # si existe, eliminamos el elemento de la pila y lo arrojamos
+    # si no existe, arrojamos un nulo
+    def pop_operator(self):
+        if self.operator_stack:
+            return self.operator_stack.pop()
+
+        return None
+
+    # Retornamos el elemento mas nuevo de la pila, usamos el indice -1 ya que corresponde al ultimo elemento agregado
+    def peak_operator(self):
+        if self.operator_stack:
+            return self.operator_stack[-1]
+        return None
+    
+    def push_jump(self, position):
+        self.jump_stack.append(position)
+    
+    def pop_jump(self):
+        if self.jump_stack:
+            return self.jump_stack.pop()
+
+        return None
+    
+    def add_temp(self):
+        self.temp_var_counter += 1
+        return f"t{self.temp_var_counter}"
+        
+    def add_quad(self, operator, arg1, arg2, result):
+        quad = (operator, arg1, arg2, result)
+        self.quads.append(quad)
+        
+        # Indice en el cual se almaceno el cuadruplo agregado
+        return len(self.quads) - 1
+```
+
+Separare algunos metodos que tienen un comportamiento distinto
+```python
+    def push_operand(self, operand, operand_type):
+            self.operand_stack.append(operand)
+            self.type_stack.append(operand_type)
+        
+    def pop_operand(self):
+        if self.operand_stack and self.type_stack:
+            operand = self.operand_stack.pop()
+            operand_type = self.type_stack.pop()
+            
+            return operand, operand_type
+
+        return None, None
+```
+
+Las operaciones realizadas en la pila de operandos se aplican al mismo tiempo en la pila de tipos, esto debido a que un operador va ligado a su tipo, esto nos es util particularmente al momento de generar cuadruplos para las operaciones aritmeticas, ya que es necesario evaluar el tipo de dato que tendra la variable temporal resultante despues de evaluar una expresion.
+
+Tenemos la siguientes estructuras:
+
+### Pila de Operadores - operator_stack
+Almacena operadores binarios (+, -, *, /) durante el analisis de expresiones aritmeticas. Se pushea un operador cuando se encuentra en la expresion y se saca cuando debe generarse un cuadruplo para una expresion aritmetica. Permite manejar la precedencia y asociatividad de operadores.
+
+### Pila de Operandos - operand_stack
+Almacena operandos (variables, constantes, resultados temporales) de las expresiones. Se pushea cada operando antes de procesarlo y se sacan dos operandos cuando se genera un cuadruplo aritmetico, funciona en paralelo con la pila de tipos.
+
+### Pila de Tipos - type_stack
+Mantiene sincronizado el tipo de dato de cada operando en la pila de operandos. Se pushea y popea junto con cada operando para validar operaciones con el cubo semantico y determinar el tipo resultante de variables temporales.
+
+### Pila de Saltos - jump_stack
+Almacena posiciones de cuadruplos GOTOF y GOTO pendientes de llenar, se pushea la posicion cuando se genera un salto condicional y se saca cuando se conoce el destino final, sirve para implementar estructuras de control (if-else, while).
+
+### Fila de Cuadruplos - quads
+Almacena secuencialmente todos los cuadruplos generados como tuplas (operador, arg1, arg2, resultado), representa el codigo intermedio que sera ejecutado. Se agrega con add_quad() que retorna el indice, permitiendo llenar quadruplos pendientes por los saltos usando fill_quad().
+
+### Puntos Neuralgicos
+1. push_operand(): Agregar un operando y su tipo a las pilas de operandos y tipos
+```python
+def push_operand(self, operand, operand_type):
+    self.operand_stack.append(operand)
+    self.type_stack.append(operand_type)
+```
+
+2. push_operator(): Agregar operador a pila de operadores
+```python
+    # Agregar un operador a la pila
+    def push_operator(self, operator):
+        self.operator_stack.append(operator)
+```
+
+
+3. generate_arithmetic_operation(): Generar cuadruplo aritmetico, utiliza al cubo semantico para validar a los tipos de las temporales resultantes
+```python
+    # Cuadruplo para operaciones aritmeticas, se utiliza al cubo semantico para validar tipos
+    def generate_arithmetic_operation(self, semantic_cube: SemanticCube):
+        if not self.operator_stack:
+            return None
+        
+        operator = self.pop_operator()
+        
+        # El procesamiento se lleva a cabo de izquierda a derecha, por lo que podemos asumir que el ultimo operador en evaluarse es el de la derecha 
+        # Teniendo 'a + b', tenemos que el proceso seria:
+        # operand_stack.append(a)
+        # type_stack.append(int)
+        
+        # operator_stack.append(+)
+        
+        # operand_stack.append(b)
+        # type_stack.append(int)
+        
+        # Por ende, podemos asumir que el operando de la derecha es el elemento mas reciente en la pila
+        right, right_type = self.pop_operand()
+        left, left_type = self.pop_operand()
+        
+        # Usamos al cubo semantico para validar el tipo del resulrado final
+        result_type = semantic_cube.get_result_type(operator=operator, left_type=left_type, right_type=right_type)
+        
+        if result_type is None:
+            print(f"Error: Operacion invalida {left_type} {operator} {right_type}")
+            return None
+        
+        # Generamos una nueva variable temporal para almacenar el resultado de la operacion 
+        temp = self.add_temp()
+        
+        # Creamos un cuadruplo
+        self.add_quad(operator=operator, arg1=left, arg2=right, result=temp)
+        
+        # Guardamos el resultado en la pila de operandos
+        self.push_operand(operand= temp, operand_type=result_type)
+        
+        return temp
+```
+
+4. generate_assignation(): Generar cuadruplo de asignacion
+```python
+    # No todas las operaciones necesitan a los 4 argumentos ya que no necesariamente retornan algo
+    # En ocaciones los resultados dentro de un cuadruplo pueden representar a un salto 
+    def generate_assignation(self, var_name):
+        exp_operand, exp_type = self.pop_operand()
+        self.add_quad(operator="=", arg1=exp_operand, arg2=None, result=var_name) 
+        #                  asignacion    valor a asignar              variable destino
+```
+
+5. begin_if(): Iniciar estructura if con su salto correspondiente
+```python
+    # Generamos un GOTOF (Go To False) al inicio del if y marcamos una posicion 
+    # la cual sera llenada una vez que sepamos como se evalua la condicion
+    def begin_if(self):
+        condition, condition_type = self.pop_operand()
+        
+        # Evaluamos el cuadruplo con -1 para señalarlo como un salto, 
+        # indicando asi que sera evaluado una vez que se evalue la condicion
+        pending = self.add_quad("GOTOF", condition, None, -1)
+        
+        self.push_jump(pending)
+```
+
+6. end_if(): Completa el salto del if
+```python
+    # Completamos el salto pendiente, para entonces ya sabemos a que evaluo la condicion
+    def end_if(self):
+        pending = self.pop_jump()
+        current_position = self.get_current_position()
+        
+        # Llenamos el salto pendiente con el cuadruplo evaluado 
+        self.fill_quad(position=pending, value=current_position) 
+```
+
+7. begin_else(): Iniciar estructura else con GOTO y completa al GOTOF de si if predecesor
+```python
+    def begin_else(self):
+        # Generamos un GOTO (Go To) para saltar al else
+        # Aun no sabemos donde terminara el else
+        goto_pos = self.add_quad("GOTO", None, None, -1)
+        
+        # Completamos el GOTOF del if de este else, para entonces sabemos que debemos de saltar a este else 
+        # si la condicion del if evalua a falso
+        gotof_pos = self.pop_jump()
+        current_pos = self.get_current_position()
+        self.fill_quad(position=gotof_pos, value=current_pos)
+        
+        # Guardamos el GOTO pendiente en la cola de saltos 
+        self.push_jump(goto_pos)
+```
+
+8. end_else(): Completa el salto del else
+```python
+    # Completamos el cuadruplo pendiente de else 
+    def end_else(self):
+        goto_pos = self.pop_jump()
+        current_pos = self.get_current_position()
+        self.fill_quad(position=goto_pos ,value=current_pos)
+        
+```
+
+9. begin_while(): Guarda la posicion donde empieza el while para reevaluar la condicion del while
+```python
+    def begin_while(self):
+        current_pos = self.get_current_position()
+        self.push_jump(position=current_pos)
+```
+
+10. generate_while_condition(): Generar cuadruplo GOTOF para la condicion del while
+```python
+    # Generamos un GOTOF para el while, esto representara la condicion bajo la cual ejecutara nuestro ciclo
+    def generate_while_condition(self):
+        condition, cond_type = self.pop_operand()
+        
+        gotof_pos = self.add_quad(operator="GOTOF", arg1=condition, arg2=None, result=-1)
+        self.push_jump(position=gotof_pos)
+```
+
+11. end_while(): Generar GOTO de retorno y completar salto del while
+```python
+    def end_while(self):
+        gotof_pos = self.pop_jump()
+        return_pos = self.pop_jump()
+        
+        self.add_quad(operator="GOTO", arg1=None, arg2=None,result=return_pos)
+        
+        current_position = self.get_current_position()
+        self.fill_quad(position=gotof_pos, value=current_position)
+```
+
+12. generate_print(): Generar cuadruplos PRINT para cada expresión
+```python
+    def generate_print(self, expression_array):
+        expressions = []
+        
+        for i in range(expression_array):
+            operand, operand_type = self.pop_operand()
+            expressions.append(operand)
+            
+        expressions.reverse()
+        
+        for expression in expressions:
+            self.add_quad(operator="PRINT", arg1=expression, arg2=None, result=None)
+            #                  accion            expresion                   no hay retorno 
+```
+
+13. open_parenthesis(): Agregamos el parentesis de apertura como plag en la pila de operadores
+```python
+    # Agregamos el operador de parentesis a la pila de operadores, este servira como flag al momento en que encontremos al parentesis de cierre
+    def open_parenthesis(self):
+        self.operator_stack.append("(")
+```
+
+14. close_parenthesis(): Procesar operadores dentro del parentesis y eliminar a su apertura de la pila de operadores una vez que se encuentre
+```python
+    def close_parenthesis(self, semantic_cube: SemanticCube):
+        # Iteramos a travez de la pila de operadores utilizando a "(" como flag,
+        # donde el punto neuralgico generate_arithmetic_operation toma y procesa a las operaciones dentro del parentesis 
+        # y consume a los operadores hasta llegar a la apertura del parentesis, donde se detendra la ejecucion del while
+        while self.operator_stack and self.peak_operator() != "(":
+            self.generate_arithmetic_operation(semantic_cube=semantic_cube)
+        
+        # Eliminamos a la apertura del parentesis de la pila de operadores
+        if self.operator_stack and self.peak_operator() == "(":
+            self.pop_operator()
+```
+
+### Diagramas con los Cuadruplos Representados 
+![Diagrama de la topologia](cuadruplos-topologia.png)

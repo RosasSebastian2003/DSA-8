@@ -213,6 +213,7 @@ class IntermediateCodeGenerator:
             self.pop_operator()
         
     # Helpers
+    # Llenamos las partes vacias del cuadruplo con strings vacios
     def evaluate_nil_string(self, val):
         if not val:
             return " "

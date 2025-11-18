@@ -43,7 +43,7 @@ parser_w_expressions = """program test3;
 var
     x, y, z : int;
 main {
-    x = 5 + 3;
+    x = 5 + 3/3;
     y = x * 2;
     z = (x + y) / 2;
 }
