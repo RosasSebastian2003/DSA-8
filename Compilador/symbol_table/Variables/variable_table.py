@@ -1,4 +1,5 @@
 from symbol_table.Variables.variable import Variable
+from excecution_memory import excecution_memory
 
 class VariableTable:
     def __init__(self, scope_name):
@@ -10,7 +11,17 @@ class VariableTable:
         if name in self.variables:
             return False  # La variable ya existe
         
-        self.variables[name] = Variable(name, var_type, self.scope_name)
+        # Determinamos el scrope y asignamos una direccion de memoria
+        try:
+            if self.scope_name == 'global':
+                virtual_address = excecution_memory.add_variable(var_name=name,var_type=var_type, scope='global')
+            else:
+                virtual_address = excecution_memory.add_variable(var_name=name,var_type=var_type)
+        except:
+            print()
+            
+                
+        self.variables[name] = Variable(name, var_type, self.scope_name, virtual_address)
         return True
     
     def get_variable(self, name):

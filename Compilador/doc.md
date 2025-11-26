@@ -807,6 +807,101 @@ Almacena posiciones de cuadruplos GOTOF y GOTO pendientes de llenar, se pushea l
 ### Fila de Cuadruplos - quads
 Almacena secuencialmente todos los cuadruplos generados como tuplas (operador, arg1, arg2, resultado), representa el codigo intermedio que sera ejecutado. Se agrega con add_quad() que retorna el indice, permitiendo llenar quadruplos pendientes por los saltos usando fill_quad().
 
+## Memoria de Ejecucion 
+
+Se realizo una memoria de ejecucion la cual se divide en las siguientes partes, primero tenemos a las direcciones de memoria, utilice dos diccionarios para manejarlas, un contador para incrementar las direcciones de memoria, cuyos valores incremento conforme asigno direcciones de memoria, y un diccionario cuyos valores son la el indice maximo que puede alcanzar cada variable.
+
+```python
+        # Contadores para asignar a la siguiente direccion disponible
+        self.memory_counters = {
+            'global_int' : 1000,
+            'global_float' : 2000,
+            'local_int' : 3000,
+            'local_float' : 4000,
+            'temp_int' : 5000,
+            'temp_float' : 6000,
+            'const_int' : 7000,
+            'const_float' : 8000,
+            'const_string' : 9000
+        }
+        
+        # Diccionario con los limites superiores para cada grupo
+        self.assignment_limits = {
+            'global_int' : 1999,
+            'global_float' : 2999,
+            'local_int' : 3999,
+            'local_float' : 4999,
+            'temp_int' : 5999,
+            'temp_float' : 6999,
+            'const_int' : 7999,
+            'const_float' : 8999,
+            'const_string' : 9999
+        }
+```
+
+Luego defini otros tres diccionarios, debug_memory para traducir a las direcciones de memoria a valores "humanos", var_dict sirve para usarse para lookup ya que el programa consulta a la memoria constantemente y el diccionario tiene una complejidad de tiempo lineal O(1), por ultimo tengo un diccionario de constantes const_dict el cual sirve oara evitar la duplicacion de constantes.
+
+```python
+        # Definimos un mapa donde almacenaremos a la direccion de memoria como llave y al valor al que corresponde como valor, esto puede ser un id o un literal
+        self.debug_memory = {}
+        
+        # Mapa para almacenar variables usando su nombre como llave y su direccion como valor 
+        # Este diccionario nos sirve para tener un lookup rapido de variables, lo cual es necesario ya que el programa consulta a la memoria constantemente
+        # El diccionario tiene complejidad lineal para busqueda, lo que nos permite realizar consultas rapidas, si iteraramos un arreglo, tendriamos un tiempo de busqueda O(n),
+        # por lo que la velocidad de ejecucion de nuestro programa dependeria de que tan grande sea este
+        self.var_dict = {}
+        
+        # Mantenemos un diccionario de constantes para evitar la duplicacion de constantes
+        # Utilizaremos una tupla como llave, donde guardaremos al valor de la constante y su tipo, esto nos permitira diferenciar entre valores similares 
+        # como 5 y 5.0, donde 5 es un entero y 5.0 es un float, por lo que deben de recibir direcciones de memoria distintas
+        self.const_dict = {}
+```
+
+Por ultimo esta assign_address, que sirve para asignar y almacenar a las direcciones de memoria, donde se forma la llave para los diccionarios de variables usando al scope y al tipo de variable, luego usamos a esa llave para acceder al contador y compararlo con la cantidad limite de direcciones, si aun hay direcciones, asignamos la siguiente direccion disponible a una variable (el valor actual para la llave que se esta usando) y se le suma una unidad al contador, si se provee un id, se guarda en el diccionario de debug con su direccion de memoria como llave, luego verificamos a los scopes para saber si el valor que almacenamos es una variable, de serlo, guardamos a la direccion en el diccionario de variables con el id como llave.
+
+```python
+    def assign_address(self, scope, var_type, id=None):
+        # Revizamos si aun tenemos espacio disponible en la memoria 
+            
+        key = f"{scope}_{var_type}"
+            
+        if self.memory_counters[key] > self.assignment_limits[key]:
+            print(f"Memoria excedida para {key}")
+            return -1
+        
+        # Asignamos una direccion de memoria dependiendo del tipo de la variable y su alcance y aumentamos el contador 
+        address = self.memory_counters[key]
+        self.memory_counters[key] += 1
+        
+        if id != None:
+            self.debug_memory[address] = id
+            
+            if scope == "global" or scope == "local":
+                self.var_dict[id] = address
+        
+        return address
+```
+
+add_temp() es una funcion auxiliar que se utiliza para asignarles direcciones de memoria a las variables temporales desde el parser, este metodo puede cambiar, ya que aun estoy decidiendo si gestionar a las variables temporales desde la memoria de ejecucion.
+
+```python
+    def add_temp(self, var_type, name):
+        return self.assign_address(scope='temp', var_type=var_type, id=name)
+```
+
+add_variable utiliza a la funcion assign_address para asignar una direccion de memoria a una variable, primero revisa que la variable no haya sido declarada anteriormente en var_dict, este metodo se usa principalmente en la funcion add_variable de variable table.
+
+```python
+    def add_variable(self, var_name, var_type, scope="global"):
+        if var_name in self.var_dict:
+            print(f"La variable {var_name} ya fue declarada")
+            return 
+
+        address = self.assign_address(scope=scope, var_type=var_type, id=var_name)
+        
+        return address
+```
+
 ### Puntos Neuralgicos
 1. push_operand(): Agregar un operando y su tipo a las pilas de operandos y tipos
 ```python
@@ -993,5 +1088,25 @@ def push_operand(self, operand, operand_type):
             self.pop_operator()
 ```
 
+15. get_temp_address():  Asigna direcciones de memoria para las variables temporales
+```python
+    def get_temp_address(self, name, var_type):
+        return excecution_memory.add_temp(var_type=var_type, name=name)
+```
+16. add_const(): Asigna direcciones de memoria a las constantes
+```python
+    def add_const(self, value, value_type):
+        key = (value, value_type)
+        
+        if key in self.const_dict:
+            return self.const_dict[key]
+        
+        # Si la constante aun no existe
+        address = self.assign_address(scope="const", var_type=value_type, id=str(value))
+        self.const_dict[key] = address
+        
+        return address
+```
+    
 ### Diagramas con los Cuadruplos Representados 
 ![Diagrama de la topologia](cuadruplos-topologia.png)

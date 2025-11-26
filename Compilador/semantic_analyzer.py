@@ -93,11 +93,11 @@ class SemanticAnalyzer:
     # Uso de una variable
     def np_check_variable(self, var_name):
         var = self.function_directory.lookup_variable(var_name)
-        
+
         if var is None:
-            self.add_error(f"La varuable '{var_name}' existe")
+            self.add_error(f"La varuable '{var_name}' no existe")
             return None
-        
+
         return var.var_type
     
     #Expresiones y operaciones

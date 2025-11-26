@@ -3,6 +3,7 @@ from lex import tokens
 from semantic_analyzer import SemanticAnalyzer
 from intermediate_code_generator import intermediate_code_generator
 from semantic_cube import semantic_cube
+from excecution_memory import excecution_memory
 
 # NOTOTOTOTA
 # El primer indice siempre representa al resultado de la gramatica, por ende, podemos asignar cada token a un indice segun su orden de izquierda a derecha
@@ -150,6 +151,7 @@ def p_expression(p):
         left_operand = p[1]
         # Hay operador relacional
         operator, right_operand = p[2]
+        
         left_type = expression_types.get(id(p[1]))
         right_type = expression_types.get(id(right_operand))
         
@@ -158,10 +160,12 @@ def p_expression(p):
             operator, p[1], right_operand, left_type, right_type
         )
         
-        # Generamos un cuadruplo para procesar operadores relacionales
+        # Generamos un cuadruplo para procesar operadores relacionales y le asignamos una direccion de memoria
         temp = intermediate_code_generator.add_temp()
-        intermediate_code_generator.add_quad(operator=operator,arg1=left_operand,arg2=right_operand,result=temp)
-        intermediate_code_generator.push_operand(operand=temp, operand_type=result_type)
+        temp_address = intermediate_code_generator.get_temp_address(name=temp, var_type="int")
+        
+        intermediate_code_generator.add_quad(operator=operator,arg1=left_operand,arg2=right_operand,result=temp_address)
+        intermediate_code_generator.push_operand(operand=temp_address, operand_type=result_type)
         
         p[0] = (operator, p[1], right_operand)
         expression_types[id(p[0])] = result_type
@@ -271,32 +275,67 @@ def p_statement(p):
 # -------------------------------------------------------
 # <CONDITION>
 def p_condition(p):
-    """condition : IF L_PARENTHESIS expression R_PARENTHESIS body SEMI_COLON
-                 | IF L_PARENTHESIS expression R_PARENTHESIS body ELSE body SEMI_COLON"""
-    if len(p) == 7:
-        # If sin else
-       #intermediate_code_generator.end_if()
-        
-        p[0] = ('if', p[3], p[5], None)
+    '''condition : IF begin_if expression end_if body else_part SEMI_COLON'''
+    p[0] = ('if', p[3], p[5], p[6])
+
+def p_else_part(p):
+    '''else_part : begin_else body end_else
+                 | end_if_no_else'''
+    if len(p) == 4:
+        # Con else
+        p[0] = p[2]
     else:
-        # if con else
-        # p[1] = IF
-        # p[2] = (
-        # p[3] = expression
-        # p[4] = )
-        # p[5] = body (then)
-        # p[6] = ELSE
-        # p[7] = body (else)
-        # p[8] = ;
-        
-        #intermediate_code_generator.end_else()
-        p[0] = ('if', p[3], p[5], p[7])         
+        # Sin else
+        p[0] = None
+
+# Creamos expresiones intermedias para manejar el inicio y el cierre del if al igual que el inicio y cierre del else
+def p_begin_if(p):
+    'begin_if : L_PARENTHESIS'
+    intermediate_code_generator.begin_if()
+    p[0] = p[1]
+
+def p_end_if(p):
+    'end_if : R_PARENTHESIS'
+    # No llenar aún, esperar a ver si hay else
+    p[0] = p[1]
+
+def p_end_if_no_else(p):
+    'end_if_no_else : empty'
+    # Cuando no hay else, llenar el salto del if
+    intermediate_code_generator.end_if()
+    p[0] = None
+
+def p_begin_else(p):
+    'begin_else : ELSE'
+    intermediate_code_generator.begin_else()
+    p[0] = p[1]
+
+def p_end_else(p):
+    'end_else : empty'
+    intermediate_code_generator.end_else()
+    p[0] = None
                  
 # -------------------------------------------------------
 # <CYCLE>
 def p_cycle(p):
-    'cycle : WHILE L_PARENTHESIS expression R_PARENTHESIS DO body SEMI_COLON'
+    'cycle : WHILE begin_while while_expression R_PARENTHESIS DO body end_while SEMI_COLON'
     p[0] = ('while', p[3], p[6])
+
+# Guardamos la posicion antes de la expresion 
+def p_begin_while(p):
+    'begin_while : L_PARENTHESIS'
+    intermediate_code_generator.begin_while()
+    p[0] = p[1]
+
+def p_while_expression(p):
+    'while_expression : expression'
+    intermediate_code_generator.generate_while_condition()
+    p[0] = p[1]
+
+def p_end_while(p):
+    'end_while : empty'
+    intermediate_code_generator.end_while()
+    p[0] = None
     
 # -------------------------------------------------------
 # <PRINT>
@@ -308,12 +347,21 @@ def p_print_stmt(p):
 
 # <A> (print_expression_list)
 def p_print_expression_list(p):
-    '''print_expression_list : expression print_expression_list_prime 
-                             | CNT_STRING print_expression_list_prime'''
+    '''print_expression_list : print_item print_expression_list_prime'''
     if p[2] is not None and len(p[2]) > 0:
         p[0] = [p[1]] + p[2]
     else:
         p[0] = [p[1]]
+
+# Agregamos una nueva regla para manejar a los items de print 
+def p_print_item(p):
+    '''print_item : expression
+                  | CNT_STRING'''
+    if isinstance(p[1], str) and p[1].startswith('"'):
+        # Agregamos al string como constante
+        const_address = excecution_memory.add_const(p[1], 'string')
+        intermediate_code_generator.push_operand(const_address, 'string')
+    p[0] = p[1]
 
 # <A'> (print_expression_list_prime)
 def p_print_expression_list_prime(p):
@@ -350,9 +398,13 @@ def p_factor(p):
             expression_types[id(p[0])] = expression_types.get(id(p[2]))
         else: 
             operand, operand_type = intermediate_code_generator.pop_operand()
+            
+            # Creamos una direccion de memoria para la temporal creada
             temp = intermediate_code_generator.add_temp()
-            intermediate_code_generator.add_quad(operator="UMINUS", arg1=operand, arg2=None, result=temp)
-            intermediate_code_generator.push_operand(operand=temp, operand_type=operand_type)
+            temp_address = intermediate_code_generator.get_temp_address(name=temp, var_type=operand_type)
+            
+            intermediate_code_generator.add_quad(operator="UMINUS", arg1=operand, arg2=None, result=temp_address)
+            intermediate_code_generator.push_operand(operand=temp_address, operand_type=operand_type)
             
             # Menos unario
             p[0] = ('unary_minus', p[2])
@@ -366,15 +418,17 @@ def p_factor(p):
             var_type = semantic_analyzer.np_check_variable(p[1])
             expression_types[id(p[0])] = var_type
             
-            # Empujamos a la pila de operandos
-            intermediate_code_generator.push_operand(operand=p[1], operand_type=var_type)
+            # Generamos la direccion de memoria y la empujamos a la pila de operandos
+            var_address = excecution_memory.var_dict.get(p[1])
+            intermediate_code_generator.push_operand(operand=var_address, operand_type=var_type)
         else:
             # Si es constante, ya se asigno en p_cte
             var_type = expression_types.get(id(p[1]))
             expression_types[id(p[0])] = var_type
             
-            # Empujamos a la pila de operandos
-            intermediate_code_generator.push_operand(operand=p[1], operand_type=var_type)
+            # Generamos la direccion de memoria y empujamos a la pila de operandos
+            const_address = excecution_memory.add_const(value=p[1], value_type=var_type)
+            intermediate_code_generator.push_operand(operand=const_address, operand_type=var_type)
         
 # -------------------------------------------------------
 # <FUNCS>
@@ -383,12 +437,12 @@ def p_funcs(p):
              | VOID ID L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET body R_SBRACKET SEMI_COLON
              | VOID ID L_PARENTHESIS R_PARENTHESIS L_SBRACKET vars body R_SBRACKET SEMI_COLON
              | VOID ID L_PARENTHESIS R_PARENTHESIS L_SBRACKET body R_SBRACKET SEMI_COLON"""
-    
+
     func_name = p[2]
-    
+
     # Finalizar funcion
     semantic_analyzer.np_end_function(func_name)
-    
+
     if len(p) == 11:
         p[0] = ('func', p[2], p[4], p[7], p[8])
     elif len(p) == 10:
@@ -404,13 +458,13 @@ def p_funcs(p):
 def np_aux_start_function(func_name):
     semantic_analyzer.np_start_function(func_name, 'void')
 
-# <A> 
+# <A>
 def p_param_list(p):
     '''param_list : ID COLON type param_list_prime'''
     # Agregar parametro
     param_name = p[1]
     param_type = p[3]
-    
+
     semantic_analyzer.np_add_parameter(param_name, param_type)
     
     if p[4] is not None and len(p[4]) > 0:
@@ -483,7 +537,8 @@ def p_assign(p):
     semantic_analyzer.np_check_assignment(var_name, expr_type)
     
     # Generamos un cuadruplo
-    intermediate_code_generator.generate_assignation(var_name=var_name)
+    var_address = excecution_memory.var_dict.get(var_name)
+    intermediate_code_generator.generate_assignation(var_name=var_address)
     
     p[0] = ('assign', p[1], p[3])
 

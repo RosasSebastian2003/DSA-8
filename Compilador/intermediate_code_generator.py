@@ -1,4 +1,5 @@
 from semantic_cube import SemanticCube
+from excecution_memory import excecution_memory
 
 class IntermediateCodeGenerator:
     def __init__(self):
@@ -108,14 +109,15 @@ class IntermediateCodeGenerator:
         
         # Generamos una nueva variable temporal para almacenar el resultado de la operacion 
         temp = self.add_temp()
+        temp_address = self.get_temp_address(name=temp, var_type=result_type)
         
         # Creamos un cuadruplo
-        self.add_quad(operator=operator, arg1=left, arg2=right, result=temp)
+        self.add_quad(operator=operator, arg1=left, arg2=right, result=temp_address)
         
         # Guardamos el resultado en la pila de operandos
-        self.push_operand(operand= temp, operand_type=result_type)
+        self.push_operand(operand= temp_address, operand_type=result_type)
         
-        return temp
+        return temp_address
     
     # No todas las operaciones necesitan a los 4 argumentos ya que no necesariamente retornan algo
     # En ocaciones los resultados dentro de un cuadruplo pueden representar a un salto 
@@ -175,7 +177,8 @@ class IntermediateCodeGenerator:
         goto_pos = self.pop_jump()
         current_pos = self.get_current_position()
         self.fill_quad(position=goto_pos ,value=current_pos)
-        
+    
+    # Generamos un marcador que nos lleve a un punto previo a la condicion
     def begin_while(self):
         current_pos = self.get_current_position()
         self.push_jump(position=current_pos)
@@ -187,11 +190,12 @@ class IntermediateCodeGenerator:
         gotof_pos = self.add_quad(operator="GOTOF", arg1=condition, arg2=None, result=-1)
         self.push_jump(position=gotof_pos)
     
+    # Generamos un GOTO para marcar la salida del while
     def end_while(self):
         gotof_pos = self.pop_jump()
         return_pos = self.pop_jump()
         
-        self.add_quad(operator="GOTO", arg1=None, arg2=None,result=return_pos)
+        self.add_quad(operator="GOTO", arg1=None, arg2=None,result=return_pos) # Salto al inicio del ciclo 
         
         current_position = self.get_current_position()
         self.fill_quad(position=gotof_pos, value=current_position)
@@ -211,6 +215,9 @@ class IntermediateCodeGenerator:
         # Eliminamos a la apertura del parentesis de la pila de operadores
         if self.operator_stack and self.peak_operator() == "(":
             self.pop_operator()
+            
+    def get_temp_address(self, name, var_type):
+        return excecution_memory.add_temp(var_type=var_type, name=name)
         
     # Helpers
     # Llenamos las partes vacias del cuadruplo con strings vacios

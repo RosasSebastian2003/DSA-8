@@ -5,7 +5,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from intermediate_code_generator import intermediate_code_generator
-from yacc import parser
+from excecution_memory import excecution_memory
+from yacc import parser, semantic_analyzer
 
 print("ANÁLISIS SINTÁCTICO\n")
 
@@ -22,6 +23,8 @@ print(parser.parse(program_w_vars))
 print("\n Cuadruplos generados")
 intermediate_code_generator.print_quads()
 intermediate_code_generator.reset()
+excecution_memory.reset()
+semantic_analyzer.reset()
 print()
 
 parser_w_ids = """program test2;
@@ -37,6 +40,8 @@ print(parser.parse(parser_w_ids))
 print("\n Cuadruplos generados")
 intermediate_code_generator.print_quads()
 intermediate_code_generator.reset()
+excecution_memory.reset()
+semantic_analyzer.reset()
 print()
 
 parser_w_expressions = """program test3;
@@ -54,6 +59,8 @@ print(parser.parse(parser_w_expressions))
 print("\n Cuadruplos generados")
 intermediate_code_generator.print_quads()
 intermediate_code_generator.reset()
+excecution_memory.reset()
+semantic_analyzer.reset()
 print()
 
 parser_w_if = """program test4;
@@ -72,6 +79,8 @@ print(parser.parse(parser_w_if))
 print("\n Cuadruplos generados")
 intermediate_code_generator.print_quads()
 intermediate_code_generator.reset()
+excecution_memory.reset()
+semantic_analyzer.reset()
 print()
 
 parser_w_if_else = """program test5;
@@ -92,6 +101,8 @@ print(parser.parse(parser_w_if_else))
 print("\n Cuadruplos generados")
 intermediate_code_generator.print_quads()
 intermediate_code_generator.reset()
+excecution_memory.reset()
+semantic_analyzer.reset()
 print()
 
 parser_w_loop = """program test6;
@@ -110,6 +121,8 @@ print(parser.parse(parser_w_loop))
 print("\n Cuadruplos generados")
 intermediate_code_generator.print_quads()
 intermediate_code_generator.reset()
+excecution_memory.reset()
+semantic_analyzer.reset()
 print()
 
 parser_w_print = """program test7;
@@ -126,6 +139,8 @@ print(parser.parse(parser_w_print))
 print("\n Cuadruplos generados")
 intermediate_code_generator.print_quads()
 intermediate_code_generator.reset()
+excecution_memory.reset()
+semantic_analyzer.reset()
 print()
 
 parser_w_func = """program test8;
@@ -145,6 +160,8 @@ print(parser.parse(parser_w_func))
 print("\n Cuadruplos generados")
 intermediate_code_generator.print_quads()
 intermediate_code_generator.reset()
+excecution_memory.reset()
+semantic_analyzer.reset()
 print()
 
 full_program = """program completo;
@@ -184,6 +201,8 @@ print(parser.parse(full_program))
 print("\n Cuadruplos generados")
 intermediate_code_generator.print_quads()
 intermediate_code_generator.reset()
+excecution_memory.reset()
+semantic_analyzer.reset()
 print()
 
 
