@@ -7,7 +7,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from intermediate_code_generator import intermediate_code_generator
 from excecution_memory import excecution_memory
 from yacc import parser, semantic_analyzer
-
+from virtual_machine import virtual_machine
 print("ANÁLISIS SINTÁCTICO\n")
 
 program_w_vars = """program test1;
@@ -51,11 +51,20 @@ main {
     x = 5 + 3/3;
     y = x * 2;
     z = (x + y) / 2;
+    print("Valor de z:");
+    print(z);
 }
 end"""
 
 print("Test 3: Programa con expresiones aritméticas")
-print(parser.parse(parser_w_expressions))
+results = parser.parse(parser_w_expressions)
+print(results)
+virtual_machine.load_quads(intermediate_code_generator.quads)
+virtual_machine.load_constants(excecution_memory.const_dict)
+print("Ejecución del programa:")
+virtual_machine.execute()
+print("fin de la ejecución")
+
 print("\n Cuadruplos generados")
 intermediate_code_generator.print_quads()
 intermediate_code_generator.reset()

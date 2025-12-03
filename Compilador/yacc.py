@@ -187,8 +187,8 @@ def p_expression_prime(p):
 # -------------------------------------------------------
 # <F_CALL>
 def p_f_call(p):
-    '''f_call : ID L_PARENTHESIS R_PARENTHESIS SEMI_COLON
-              | ID L_PARENTHESIS expression_list R_PARENTHESIS SEMI_COLON'''
+    '''f_call : ID era L_PARENTHESIS R_PARENTHESIS gosub SEMI_COLON
+              | ID era L_PARENTHESIS expression_list R_PARENTHESIS gosub SEMI_COLON'''
     
     func_name = p[1]
     
@@ -197,35 +197,36 @@ def p_f_call(p):
     
     # Continuar si la función existe
     if func is not None:
-        if len(p) == 5:
+        if len(p) == 7:
             # Sin argumentos
             semantic_analyzer.np_check_function_call(func_name, [])
             p[0] = ('f_call', p[1], [])
         else:
             # Con argumentos
-            arg_list = p[3]
+            arg_list = p[4]
             # Obtenemos los tipos de los argumentos
             arg_types = [expression_types.get(id(arg)) for arg in arg_list]
             # Filtramos valores nulos
             arg_types = [t for t in arg_types if t is not None]
             
             semantic_analyzer.np_check_function_call(func_name, arg_types)
-            p[0] = ('f_call', p[1], p[3])
+            p[0] = ('f_call', p[1], arg_list)
     else:
         # Creamos el nodo aunque la funcion no exista
         if len(p) == 5:
             p[0] = ('f_call', p[1], [])
         else:
-            p[0] = ('f_call', p[1], p[3])
+            p[0] = ('f_call', p[1], p[4])
         
 # <A>
 def p_expression_list(p):
-    '''expression_list : expression expression_list_prime'''
+    '''expression_list : expression expression_list_prime
+                       | f_call_arg expression_list_prime'''
     if p[2] is not None and len(p[2]) > 0:
         p[0] = [p[1]] + p[2]
     else:
         p[0] = [p[1]]
-        
+
 # <A'>
 def p_expression_list_prime(p):
     '''expression_list_prime : COMMA expression_list
@@ -234,6 +235,41 @@ def p_expression_list_prime(p):
         p[0] = p[2]
     else:
         p[0] = []
+        
+# ERA
+def p_era(p):
+    'era : empty'
+    # Obtenemos el nombre de la funcion desde el parser
+    func_name = p[-1]
+    intermediate_code_generator.begin_function_call(func_name=func_name)
+    p[0] = None
+
+# GOSUB
+def p_gosub(p):
+    'gosub : empty'
+    # Navegamos hacia atras para obtener el nombre de la funcion
+    # En la regla, p[-4] o p[-5] deberia ser el ID
+    func_name = p[-4] if len(p.stack) > 4 else p[-5]
+
+    # Buscar el nombre de la funcion en el stack del parser
+    for item in reversed(p.stack):
+        if hasattr(item, 'value') and isinstance(item.value, str) and item.value.isidentifier():
+            if item.value not in ['if', 'else', 'while', 'do', 'print', 'main', 'end', 'program', 'var', 'void', 'int', 'float']:
+                func_name = item.value
+                break
+
+    intermediate_code_generator.end_function_call(func_name)
+    p[0] = None
+
+# Argumento de función - envuelve expression con lógica de PARAM
+def p_f_call_arg(p):
+    '''f_call_arg : expression'''
+    # Pasamos el argumento con PARAM
+    operand, operand_type = intermediate_code_generator.pop_operand()
+    intermediate_code_generator.add_function_param(operand, operand_type)
+    # Volver a poner el operando para que expression_types funcione
+    intermediate_code_generator.push_operand(operand, operand_type)
+    p[0] = p[1]
         
 # -------------------------------------------------------
 # <Body>
@@ -433,25 +469,25 @@ def p_factor(p):
 # -------------------------------------------------------
 # <FUNCS>
 def p_funcs(p):
-    """funcs : VOID ID L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET vars body R_SBRACKET SEMI_COLON
-             | VOID ID L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET body R_SBRACKET SEMI_COLON
-             | VOID ID L_PARENTHESIS R_PARENTHESIS L_SBRACKET vars body R_SBRACKET SEMI_COLON
-             | VOID ID L_PARENTHESIS R_PARENTHESIS L_SBRACKET body R_SBRACKET SEMI_COLON"""
+    """funcs : VOID ID func_start L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET vars body R_SBRACKET func_end SEMI_COLON
+             | VOID ID func_start L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET body R_SBRACKET func_end SEMI_COLON
+             | VOID ID func_start L_PARENTHESIS R_PARENTHESIS L_SBRACKET vars body R_SBRACKET func_end SEMI_COLON
+             | VOID ID func_start L_PARENTHESIS R_PARENTHESIS L_SBRACKET body R_SBRACKET func_end SEMI_COLON"""
 
     func_name = p[2]
 
     # Finalizar funcion
     semantic_analyzer.np_end_function(func_name)
 
-    if len(p) == 11:
-        p[0] = ('func', p[2], p[4], p[7], p[8])
-    elif len(p) == 10:
-        if p[4] == ')':
-            p[0] = ('func', p[2], [], p[6], p[7])
+    if len(p) == 13:
+        p[0] = ('func', p[2], p[5], p[8], p[9])
+    elif len(p) == 12:
+        if p[5] == ')':
+            p[0] = ('func', p[2], [], p[7], p[8])
         else:
-            p[0] = ('func', p[2], p[4], None, p[7])
+            p[0] = ('func', p[2], p[5], None, p[8])
     else:
-        p[0] = ('func', p[2], [], None, p[6])
+        p[0] = ('func', p[2], [], None, p[7])
 
 
 # Helper para inicio de funcion, se llama antes de procesar a los parametros
@@ -460,7 +496,7 @@ def np_aux_start_function(func_name):
 
 # <A>
 def p_param_list(p):
-    '''param_list : ID COLON type param_list_prime'''
+    '''param_list : ID COLON type param param_list_prime'''
     # Agregar parametro
     param_name = p[1]
     param_type = p[3]
@@ -473,6 +509,24 @@ def p_param_list(p):
         p[0] = [(p[1], p[3])]
 
 
+def p_param(p):
+    '''param : empty'''
+    # Obtener nombre y tipo del parametro
+    param_name = p[-3]  # ID
+    param_type = p[-1]  # type
+    
+    semantic_analyzer.np_add_parameter(param_name, param_type)
+    
+    # Obtener direccion del parametro y registrarla
+    param_address = excecution_memory.var_dict.get(param_name)
+    
+    # Obtener nombre de la funcion actual
+    func_name = semantic_analyzer.current_function
+    if func_name and param_address:
+        intermediate_code_generator.add_function_param(func_name, param_address, param_type)
+    
+    p[0] = None
+    
 # <A'> 
 def p_param_list_prime(p):
     """param_list_prime : COMMA param_list
@@ -481,14 +535,30 @@ def p_param_list_prime(p):
         p[0] = p[2]
     else:
         p[0] = []
+        
+def p_func_start(p):
+    '''func_start : empty'''
+    func_name = p[-1]
+    semantic_analyzer.np_start_function(func_name, 'void')
+    intermediate_code_generator.register_function(func_name)  # Registrar, no llamar
+    p[0] = None
+    
+def p_func_end(p):
+    'func_end : empty'
+    # Usar el current_function del semantic_analyzer
+    func_name = semantic_analyzer.current_function
+    if func_name:
+        intermediate_code_generator.end_function(func_name)  # Genera ENDFUNC
+    p[0] = None
+
 
 # -------------------------------------------------------
 # <Program>
 def p_program(p):
-    """program : PROGRAM ID SEMI_COLON vars func_list MAIN body END
-               | PROGRAM ID SEMI_COLON func_list MAIN body END
-               | PROGRAM ID SEMI_COLON vars MAIN body END
-               | PROGRAM ID SEMI_COLON MAIN body END"""
+    """program : PROGRAM ID SEMI_COLON program_start vars func_list MAIN main_start body program_end END
+               | PROGRAM ID SEMI_COLON program_start func_list MAIN main_start body program_end END
+               | PROGRAM ID SEMI_COLON program_start vars MAIN main_start body program_end END
+               | PROGRAM ID SEMI_COLON program_start MAIN main_start body program_end END"""
     
     # Iniciar programa
     program_name = p[2]
@@ -524,6 +594,22 @@ def p_func_list_prime(p):
     else:
         p[0] = []
 
+# Inicio del programa 
+def p_program_start(p):
+    'program_start : empty'
+    intermediate_code_generator.start_program()
+    p[0] = None
+
+# Cierre del programa 
+def p_main_start(p):
+    'main_start : empty'
+    intermediate_code_generator.begin_main()
+    p[0] = None
+    
+def p_program_end(p):
+    'program_end : empty'
+    intermediate_code_generator.end_program()
+    p[0] = None
 
 # -------------------------------------------------------
 # <ASSIGN>
@@ -550,6 +636,14 @@ def p_error(p):
         print(f"Syntax error at token {p.type} ('{p.value}') on line {p.lineno}")
     else:
         print("Syntax error: Unexpected end of file (EOF)")
+    # if p:
+    #     error_msg = f"Syntax error at token {p.type} ('{p.value}') on line {p.lineno}"
+    #     print(error_msg)
+    #     raise SyntaxError(error_msg)
+    # else:
+    #     error_msg = "Syntax error: Unexpected end of file (EOF)"
+    #     print(error_msg)
+    #     raise SyntaxError(error_msg)
 
 
 # Crear el parser

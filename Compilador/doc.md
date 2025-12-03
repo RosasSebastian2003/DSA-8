@@ -1107,6 +1107,88 @@ def push_operand(self, operand, operand_type):
         
         return address
 ```
+
+17. p_func_start(): Empieza la llamada a la funcion, utiliza a la funcion begin_function_call para registrar a la funcion dentro de la tabla de funciones junto con sus recursos
+
+```python
+    def p_func_start(p):
+        '''func_start : empty'''
+        func_name = p[-1]
+        semantic_analyzer.np_start_function(func_name, 'void')
+        intermediate_code_generator.begin_function_call(func_name)
+        p[0] = None
+
+    # Llamadas a funciones
+    def begin_function_call(self, func_name):
+        start_address = self.get_current_position()
+        
+        # Registramos a la funcion en la tabla de funciones junto con sus recursos
+        # Almacenamos la cantidad de variables locales y temporales que utiliza la funcion 
+        # y la informacion de sus parametros
+        self.function_table[func_name] = {
+            "start_address": start_address,
+            "param_addresses": [],
+            "param_types": [],
+            "local_vars": 0,
+            "temp_vars": 0
+        }
+        
+        print(f"Funcion {func_name} iniciada en {start_address}")
+```
     
+18. p_func_end(): Generamos un cuadruplo GOSUB para saltar a la funcion
+```python
+    def end_function_call(self, func_name):
+        # Generamos un cuadruplo GOSUB para saltar a la funcion
+        func_info = self.function_table.get(func_name)
+        
+        if func_info is None:
+            print(f"Error: La funcion {func_name} no existe en la tabla de funciones")
+            return 
+        
+        start_address = func_info["start_address"]
+        
+        # Generamos el cuadruplo GOSUB
+        self.add_quad(operator="GOSUB", arg1=func_name, arg2=None, result=start_address)
+        print(f"Llamada a funcion {func_name} finalizada, GOSUB a {start_address})")
+        
+        # Restauramos el estado previo a la llamada de funcion
+        if self.call_stack:
+            saved_state = self.call_stack.pop()
+            self.current_function = saved_state["function_name"]
+            self.param_counter = saved_state["param_counter"]
+            self.argument_stack = saved_state["arguments"]
+        else:
+            self.current_function = None
+            self.param_counter = 0
+            self.argument_stack = []    
+```
+
+19. p_program_start(): Inserta un cuadruplo GOTO al inicio de main
+```python
+    # Inicio del programa 
+    def p_program_start(p):
+        'program_start : empty'
+        intermediate_code_generator.start_program()
+        p[0] = None
+
+    def start_program(self):
+        # Generamos un GOTO al inicio del main
+        goto_pos = self.add_quad("GOTO", None, None, -1)
+        print(f"Programa iniciado: GOTO al main {goto_pos}")
+```
+
+20. p_program_end(): Generamos un cuadruplo END apara finalizar la ejecusion del programa 
+```python
+    def p_program_end(p):
+        'program_end : empty'
+        intermediate_code_generator.end_program()
+        p[0] = None
+
+    def end_program(self):
+        # Generamos un cuadruplo END para finalizar el programa
+        self.add_quad("END", None, None, None)
+        print("Programa finalizado: END")
+```
 ### Diagramas con los Cuadruplos Representados 
 ![Diagrama de la topologia](cuadruplos-topologia.png)

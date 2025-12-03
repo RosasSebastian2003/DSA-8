@@ -82,7 +82,8 @@ class SemanticCube:
 
         self.cube['='] = {
             'int': {
-                'int': 'int',      
+                'int': 'int',
+                'float':'int'      
             },
             'float': {
                 'int': 'float',    

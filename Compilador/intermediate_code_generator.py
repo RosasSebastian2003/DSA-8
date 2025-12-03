@@ -16,6 +16,12 @@ class IntermediateCodeGenerator:
         
         self.temp_var_counter = 0 # Contador de variables temporales
         
+        self.function_table = {}  # Tabla de funciones {nombre_funcion: Function}
+        self.argument_stack = []  # Pila para manejar argumentos en llamadas a funciones
+        self.param_counter = 0  # Contador de argumentos en llamadas a funciones
+        self.call_stack = []      # Pila para manejar llamadas a funciones
+        self.current_function = None  # Nombre de la funcion actual siendo procesada
+        
     # Agregar un operador a la pila
     def push_operator(self, operator):
         self.operator_stack.append(operator)
@@ -215,10 +221,136 @@ class IntermediateCodeGenerator:
         # Eliminamos a la apertura del parentesis de la pila de operadores
         if self.operator_stack and self.peak_operator() == "(":
             self.pop_operator()
-            
-    def get_temp_address(self, name, var_type):
-        return excecution_memory.add_temp(var_type=var_type, name=name)
+    
+    # Declaracion de funciones - registrar en tabla
+    def register_function(self, func_name):
+        start_address = self.get_current_position()
         
+        # Registramos a la funcion en la tabla de funciones junto con sus recursos
+        # Almacenamos la cantidad de variables locales y temporales que utiliza la funcion 
+        # y la informacion de sus parametros
+        self.function_table[func_name] = {
+            "start_address": start_address,
+            "param_addresses": [],
+            "param_types": [],
+            "local_vars": 0,
+            "temp_vars": 0
+        }
+        
+        print(f"Funcion {func_name} registrada en direccion {start_address}")
+    
+    # Agregar un parametro a la funcion en la tabla de funciones
+    def add_function_param(self, func_name, param_address, param_type):
+        if func_name in self.function_table:
+            self.function_table[func_name]["param_addresses"].append(param_address)
+            self.function_table[func_name]["param_types"].append(param_type)
+            print(f"Parametro agregado a {func_name}: {param_address} ({param_type})")
+            
+    def end_function(self, func_name):
+        # Generamos un cuadruplo ENDFUNC 
+        self.add_quad(operator="ENDFUNC", arg1=None, arg2=None, result=None)
+        print(f"Funcion {func_name} finalizada")
+        
+    # Iniciamos una llamada de funcion
+    # Generamos un cuadruplo ERA para reservar espacio de la memoria para llamar a la funcion
+    def begin_function_call(self, func_name):
+        if self.current_function is not None:
+            self.call_stack.append({
+                "function_name": self.current_function,
+                "param_counter": self.param_counter,
+                "arguments": self.argument_stack.copy()
+            })
+            self.argument_stack = []
+            
+        self.current_function = func_name
+        self.param_counter = 0
+        
+        # Generamos un cuadruplo ERA 
+        self.add_quad(operator="ERA", arg1=func_name, arg2=None, result=None)
+        
+        print(f"Llamando a la funcion: {func_name}")
+    
+    # Procesamos un argumento para la llamada de la funcion
+    # una vez procesado, enviamos el parametro mediante un cuadruplo PARAM
+    def process_function_argument(self, argument_address, argument_type):
+        if self.current_function is None:
+            print("Error: No se puede procesar un argumento si no hay una funcion activa")
+            return
+        
+        # Comprobamos que la funcion exista en la tabla de funciones
+        func_info = self.function_table.get(self.current_function)
+        if func_info is None:
+            print(f"Error: La funcion {self.current_function} no existe en la tabla de funciones")
+            return
+            
+        # Verificamos que la cantidad de argumentos no exceda a la cantidad de parametros esperados
+        expected_params = len(func_info["param_addresses"])
+        if self.param_counter >= expected_params:
+            print(f"Error: Demasiados argumentos para la funcion {self.current_function}, se esperam {expected_params}")
+            return
+        
+        # Obtenemos la direccion del parametro correspondiente 
+        param_address = func_info["param_addresses"][self.param_counter]
+        
+        # Generamos un cuadruplo PARAM
+        self.add_quad(operator="PARAM", arg1=argument_address, arg2=None, result=param_address)
+        self.param_counter += 1
+        print(f"Argumento procesado para {self.current_function}: {argument_address} -> {param_address}")
+    
+    # Verificamos la llamada de la funcion    
+    def verify_function_call(self, func_name, arg_count):
+        func_info = self.function_table.get(func_name)
+        
+        if func_info is None:
+            print(f"Error: La funcion {func_name} no existe en la tabla de funciones")
+            return False
+        
+        expected_params = len(func_info["param_addresses"])
+        if arg_count != expected_params:
+            print(f"Error: Numero incorrecto de argumentos en la funcion {func_name}, se esperan {expected_params} pero se recibieron {arg_count}")
+            return False
+    
+    def end_function_call(self, func_name):
+        # Generamos un cuadruplo GOSUB para saltar a la funcion
+        func_info = self.function_table.get(func_name)
+        
+        if func_info is None:
+            print(f"Error: La funcion {func_name} no existe en la tabla de funciones")
+            return 
+        
+        start_address = func_info["start_address"]
+        
+        # Generamos el cuadruplo GOSUB
+        self.add_quad(operator="GOSUB", arg1=func_name, arg2=None, result=start_address)
+        print(f"Llamada a funcion {func_name} finalizada, GOSUB a {start_address})")
+        
+        # Restauramos el estado previo a la llamada de funcion
+        if self.call_stack:
+            saved_state = self.call_stack.pop()
+            self.current_function = saved_state["function_name"]
+            self.param_counter = saved_state["param_counter"]
+            self.argument_stack = saved_state["arguments"]
+        else:
+            self.current_function = None
+            self.param_counter = 0
+            self.argument_stack = [] 
+    
+    def begin_main(self):
+        # Llenamos el GOTO pendiente de la posicion 0 al finalizar el analisis    
+        if len(self.quads) > 0 and self.quads[0][0] == 'GOTO' and self.quads[0][3] == -1:
+            self.fill_quad(0, self.get_current_position())
+            print(f"Main Start: GOTO inicial apunta a {self.get_current_position()}")
+    
+    def start_program(self):
+        # Generamos un GOTO al inicio del main
+        goto_pos = self.add_quad("GOTO", None, None, -1)
+        print(f"Programa iniciado: GOTO al main {goto_pos}")
+        
+    def end_program(self):
+        # Generamos un cuadruplo END para finalizar el programa
+        self.add_quad("END", None, None, None)
+        print("Programa finalizado: END")
+    
     # Helpers
     # Llenamos las partes vacias del cuadruplo con strings vacios
     def evaluate_nil_string(self, val):
@@ -226,6 +358,13 @@ class IntermediateCodeGenerator:
             return " "
         else:
             return str(val)
+        
+    def get_temp_address(self, name, var_type):
+        return excecution_memory.add_temp(var_type=var_type, name=name)
+    
+    # Obtenemos la informacion de una funcion
+    def get_function_info(self, func_name):
+        return self.function_table.get(func_name)
         
     def print_quads(self):
         if not self.quads:
@@ -236,14 +375,28 @@ class IntermediateCodeGenerator:
             
             print(f"{i}: ({operator}, {self.evaluate_nil_string(val=arg1)}, {self.evaluate_nil_string(val=arg2)}, {self.evaluate_nil_string(val=result)})")
             
+    def print_function_table(self):
+        print("Tabla de Funciones")
+        
+        for name, info in self.function_table.items():
+            print(f"Funcion: {name}")
+            print(f"Direccion de inicio: {info["start_address"]}")
+            print(f"Direcciones de los parametros: {info["param_addresses"]}")
+            print(f"Tipos de los parametros: {info["param_types"]}")
+            
     def reset(self):
         self.quads.clear()
         self.operator_stack.clear()
         self.operand_stack.clear()
         self.type_stack.clear()
         self.jump_stack.clear()
+        self.function_table.clear()
+        self.argument_stack.clear()
+        self.call_stack.clear()
         
         self.temp_var_counter = 0
+        self.param_counter = 0
+        self.current_function = None
         
 
 

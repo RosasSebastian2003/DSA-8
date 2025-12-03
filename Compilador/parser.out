@@ -26,153 +26,172 @@ Rule 20    expression_prime -> GREATER_THAN exp
 Rule 21    expression_prime -> LOWER_THAN exp
 Rule 22    expression_prime -> NOT_EQUAL exp
 Rule 23    expression_prime -> empty
-Rule 24    f_call -> ID L_PARENTHESIS R_PARENTHESIS SEMI_COLON
-Rule 25    f_call -> ID L_PARENTHESIS expression_list R_PARENTHESIS SEMI_COLON
+Rule 24    f_call -> ID era L_PARENTHESIS R_PARENTHESIS gosub SEMI_COLON
+Rule 25    f_call -> ID era L_PARENTHESIS expression_list R_PARENTHESIS gosub SEMI_COLON
 Rule 26    expression_list -> expression expression_list_prime
-Rule 27    expression_list_prime -> COMMA expression_list
-Rule 28    expression_list_prime -> empty
-Rule 29    body -> L_CBRACKET R_CBRACKET
-Rule 30    body -> L_CBRACKET statement_list R_CBRACKET
-Rule 31    statement_list -> statement statement_list_prime
-Rule 32    statement_list_prime -> statement_list
-Rule 33    statement_list_prime -> empty
-Rule 34    statement -> assign
-Rule 35    statement -> condition
-Rule 36    statement -> cycle
-Rule 37    statement -> f_call
-Rule 38    statement -> print_stmt
-Rule 39    condition -> IF begin_if expression end_if body else_part SEMI_COLON
-Rule 40    else_part -> begin_else body end_else
-Rule 41    else_part -> end_if_no_else
-Rule 42    begin_if -> L_PARENTHESIS
-Rule 43    end_if -> R_PARENTHESIS
-Rule 44    end_if_no_else -> empty
-Rule 45    begin_else -> ELSE
-Rule 46    end_else -> empty
-Rule 47    cycle -> WHILE begin_while while_expression R_PARENTHESIS DO body end_while SEMI_COLON
-Rule 48    begin_while -> L_PARENTHESIS
-Rule 49    while_expression -> expression
-Rule 50    end_while -> empty
-Rule 51    print_stmt -> PRINT L_PARENTHESIS print_expression_list R_PARENTHESIS SEMI_COLON
-Rule 52    print_expression_list -> print_item print_expression_list_prime
-Rule 53    print_item -> expression
-Rule 54    print_item -> CNT_STRING
-Rule 55    print_expression_list_prime -> COMMA print_expression_list
-Rule 56    print_expression_list_prime -> empty
-Rule 57    factor -> L_PARENTHESIS expression R_PARENTHESIS
-Rule 58    factor -> PLUS ID
-Rule 59    factor -> PLUS cte
-Rule 60    factor -> MINUS ID
-Rule 61    factor -> MINUS cte
-Rule 62    factor -> ID
-Rule 63    factor -> cte
-Rule 64    funcs -> VOID ID L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET vars body R_SBRACKET SEMI_COLON
-Rule 65    funcs -> VOID ID L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET body R_SBRACKET SEMI_COLON
-Rule 66    funcs -> VOID ID L_PARENTHESIS R_PARENTHESIS L_SBRACKET vars body R_SBRACKET SEMI_COLON
-Rule 67    funcs -> VOID ID L_PARENTHESIS R_PARENTHESIS L_SBRACKET body R_SBRACKET SEMI_COLON
-Rule 68    param_list -> ID COLON type param_list_prime
-Rule 69    param_list_prime -> COMMA param_list
-Rule 70    param_list_prime -> empty
-Rule 71    program -> PROGRAM ID SEMI_COLON vars func_list MAIN body END
-Rule 72    program -> PROGRAM ID SEMI_COLON func_list MAIN body END
-Rule 73    program -> PROGRAM ID SEMI_COLON vars MAIN body END
-Rule 74    program -> PROGRAM ID SEMI_COLON MAIN body END
-Rule 75    func_list -> funcs func_list_prime
-Rule 76    func_list_prime -> func_list
-Rule 77    func_list_prime -> empty
-Rule 78    assign -> ID EQUAL expression SEMI_COLON
+Rule 27    expression_list -> f_call_arg expression_list_prime
+Rule 28    expression_list_prime -> COMMA expression_list
+Rule 29    expression_list_prime -> empty
+Rule 30    era -> empty
+Rule 31    gosub -> empty
+Rule 32    f_call_arg -> expression
+Rule 33    body -> L_CBRACKET R_CBRACKET
+Rule 34    body -> L_CBRACKET statement_list R_CBRACKET
+Rule 35    statement_list -> statement statement_list_prime
+Rule 36    statement_list_prime -> statement_list
+Rule 37    statement_list_prime -> empty
+Rule 38    statement -> assign
+Rule 39    statement -> condition
+Rule 40    statement -> cycle
+Rule 41    statement -> f_call
+Rule 42    statement -> print_stmt
+Rule 43    condition -> IF begin_if expression end_if body else_part SEMI_COLON
+Rule 44    else_part -> begin_else body end_else
+Rule 45    else_part -> end_if_no_else
+Rule 46    begin_if -> L_PARENTHESIS
+Rule 47    end_if -> R_PARENTHESIS
+Rule 48    end_if_no_else -> empty
+Rule 49    begin_else -> ELSE
+Rule 50    end_else -> empty
+Rule 51    cycle -> WHILE begin_while while_expression R_PARENTHESIS DO body end_while SEMI_COLON
+Rule 52    begin_while -> L_PARENTHESIS
+Rule 53    while_expression -> expression
+Rule 54    end_while -> empty
+Rule 55    print_stmt -> PRINT L_PARENTHESIS print_expression_list R_PARENTHESIS SEMI_COLON
+Rule 56    print_expression_list -> print_item print_expression_list_prime
+Rule 57    print_item -> expression
+Rule 58    print_item -> CNT_STRING
+Rule 59    print_expression_list_prime -> COMMA print_expression_list
+Rule 60    print_expression_list_prime -> empty
+Rule 61    factor -> L_PARENTHESIS expression R_PARENTHESIS
+Rule 62    factor -> PLUS ID
+Rule 63    factor -> PLUS cte
+Rule 64    factor -> MINUS ID
+Rule 65    factor -> MINUS cte
+Rule 66    factor -> ID
+Rule 67    factor -> cte
+Rule 68    funcs -> VOID ID func_start L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET vars body R_SBRACKET func_end SEMI_COLON
+Rule 69    funcs -> VOID ID func_start L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET body R_SBRACKET func_end SEMI_COLON
+Rule 70    funcs -> VOID ID func_start L_PARENTHESIS R_PARENTHESIS L_SBRACKET vars body R_SBRACKET func_end SEMI_COLON
+Rule 71    funcs -> VOID ID func_start L_PARENTHESIS R_PARENTHESIS L_SBRACKET body R_SBRACKET func_end SEMI_COLON
+Rule 72    param_list -> ID COLON type param param_list_prime
+Rule 73    param -> empty
+Rule 74    param_list_prime -> COMMA param_list
+Rule 75    param_list_prime -> empty
+Rule 76    func_start -> empty
+Rule 77    func_end -> empty
+Rule 78    program -> PROGRAM ID SEMI_COLON program_start vars func_list MAIN main_start body program_end END
+Rule 79    program -> PROGRAM ID SEMI_COLON program_start func_list MAIN main_start body program_end END
+Rule 80    program -> PROGRAM ID SEMI_COLON program_start vars MAIN main_start body program_end END
+Rule 81    program -> PROGRAM ID SEMI_COLON program_start MAIN main_start body program_end END
+Rule 82    func_list -> funcs func_list_prime
+Rule 83    func_list_prime -> func_list
+Rule 84    func_list_prime -> empty
+Rule 85    program_start -> empty
+Rule 86    main_start -> empty
+Rule 87    program_end -> empty
+Rule 88    assign -> ID EQUAL expression SEMI_COLON
 
 Terminals, with rules where they appear
 
 ASTERISK             : 11
 CNT_FLOAT            : 18
 CNT_INT              : 17
-CNT_STRING           : 54
-COLON                : 2 68
-COMMA                : 6 27 55 69
-DO                   : 47
-ELSE                 : 45
-END                  : 71 72 73 74
-EQUAL                : 78
+CNT_STRING           : 58
+COLON                : 2 72
+COMMA                : 6 28 59 74
+DO                   : 51
+ELSE                 : 49
+END                  : 78 79 80 81
+EQUAL                : 88
 FLOAT                : 15
 FORWARD_SLASH        : 12
 GREATER_THAN         : 20
-ID                   : 5 24 25 58 60 62 64 65 66 67 68 71 72 73 74 78
-IF                   : 39
+ID                   : 5 24 25 62 64 66 68 69 70 71 72 78 79 80 81 88
+IF                   : 43
 INT                  : 14
 LOWER_THAN           : 21
-L_CBRACKET           : 29 30
-L_PARENTHESIS        : 24 25 42 48 51 57 64 65 66 67
-L_SBRACKET           : 64 65 66 67
-MAIN                 : 71 72 73 74
-MINUS                : 9 60 61
+L_CBRACKET           : 33 34
+L_PARENTHESIS        : 24 25 46 52 55 61 68 69 70 71
+L_SBRACKET           : 68 69 70 71
+MAIN                 : 78 79 80 81
+MINUS                : 9 64 65
 NOT_EQUAL            : 22
-PLUS                 : 8 58 59
-PRINT                : 51
-PROGRAM              : 71 72 73 74
-R_CBRACKET           : 29 30
-R_PARENTHESIS        : 24 25 43 47 51 57 64 65 66 67
-R_SBRACKET           : 64 65 66 67
-SEMI_COLON           : 2 24 25 39 47 51 64 65 66 67 71 72 73 74 78
+PLUS                 : 8 62 63
+PRINT                : 55
+PROGRAM              : 78 79 80 81
+R_CBRACKET           : 33 34
+R_PARENTHESIS        : 24 25 47 51 55 61 68 69 70 71
+R_SBRACKET           : 68 69 70 71
+SEMI_COLON           : 2 24 25 43 51 55 68 69 70 71 78 79 80 81 88
 VAR                  : 1
-VOID                 : 64 65 66 67
-WHILE                : 47
+VOID                 : 68 69 70 71
+WHILE                : 51
 error                : 
 
 Nonterminals, with rules where they appear
 
-assign               : 34
-begin_else           : 40
-begin_if             : 39
-begin_while          : 47
-body                 : 39 40 47 64 65 66 67 71 72 73 74
-condition            : 35
-cte                  : 59 61 63
-cycle                : 36
-else_part            : 39
-empty                : 4 7 23 28 33 44 46 50 56 70 77
-end_else             : 40
-end_if               : 39
-end_if_no_else       : 41
-end_while            : 47
+assign               : 38
+begin_else           : 44
+begin_if             : 43
+begin_while          : 51
+body                 : 43 44 51 68 69 70 71 78 79 80 81
+condition            : 39
+cte                  : 63 65 67
+cycle                : 40
+else_part            : 43
+empty                : 4 7 23 29 30 31 37 48 50 54 60 73 75 76 77 84 85 86 87
+end_else             : 44
+end_if               : 43
+end_if_no_else       : 45
+end_while            : 51
+era                  : 24 25
 exp                  : 8 9 19 20 21 22
-expression           : 26 39 49 53 57 78
-expression_list      : 25 27
-expression_list_prime : 26
+expression           : 26 32 43 53 57 61 88
+expression_list      : 25 28
+expression_list_prime : 26 27
 expression_prime     : 19
-f_call               : 37
+f_call               : 41
+f_call_arg           : 27
 factor               : 11 12 13
-func_list            : 71 72 76
-func_list_prime      : 75
-funcs                : 75
+func_end             : 68 69 70 71
+func_list            : 78 79 83
+func_list_prime      : 82
+func_start           : 68 69 70 71
+funcs                : 82
+gosub                : 24 25
 id_list              : 2 6
 id_list_prime        : 5
-param_list           : 64 65 69
-param_list_prime     : 68
-print_expression_list : 51 55
-print_expression_list_prime : 52
-print_item           : 52
-print_stmt           : 38
+main_start           : 78 79 80 81
+param                : 72
+param_list           : 68 69 74
+param_list_prime     : 72
+print_expression_list : 55 59
+print_expression_list_prime : 56
+print_item           : 56
+print_stmt           : 42
 program              : 0
-statement            : 31
-statement_list       : 30 32
-statement_list_prime : 31
+program_end          : 78 79 80 81
+program_start        : 78 79 80 81
+statement            : 35
+statement_list       : 34 36
+statement_list_prime : 35
 termino              : 8 9 10 11 12
-type                 : 2 68
+type                 : 2 72
 var_list             : 1 3
 var_list_prime       : 2
-vars                 : 64 66 71 73
-while_expression     : 47
+vars                 : 68 70 78 80
+while_expression     : 51
 
 Parsing method: LALR
 
 state 0
 
     (0) S' -> . program
-    (71) program -> . PROGRAM ID SEMI_COLON vars func_list MAIN body END
-    (72) program -> . PROGRAM ID SEMI_COLON func_list MAIN body END
-    (73) program -> . PROGRAM ID SEMI_COLON vars MAIN body END
-    (74) program -> . PROGRAM ID SEMI_COLON MAIN body END
+    (78) program -> . PROGRAM ID SEMI_COLON program_start vars func_list MAIN main_start body program_end END
+    (79) program -> . PROGRAM ID SEMI_COLON program_start func_list MAIN main_start body program_end END
+    (80) program -> . PROGRAM ID SEMI_COLON program_start vars MAIN main_start body program_end END
+    (81) program -> . PROGRAM ID SEMI_COLON program_start MAIN main_start body program_end END
 
     PROGRAM         shift and go to state 2
 
@@ -186,185 +205,192 @@ state 1
 
 state 2
 
-    (71) program -> PROGRAM . ID SEMI_COLON vars func_list MAIN body END
-    (72) program -> PROGRAM . ID SEMI_COLON func_list MAIN body END
-    (73) program -> PROGRAM . ID SEMI_COLON vars MAIN body END
-    (74) program -> PROGRAM . ID SEMI_COLON MAIN body END
+    (78) program -> PROGRAM . ID SEMI_COLON program_start vars func_list MAIN main_start body program_end END
+    (79) program -> PROGRAM . ID SEMI_COLON program_start func_list MAIN main_start body program_end END
+    (80) program -> PROGRAM . ID SEMI_COLON program_start vars MAIN main_start body program_end END
+    (81) program -> PROGRAM . ID SEMI_COLON program_start MAIN main_start body program_end END
 
     ID              shift and go to state 3
 
 
 state 3
 
-    (71) program -> PROGRAM ID . SEMI_COLON vars func_list MAIN body END
-    (72) program -> PROGRAM ID . SEMI_COLON func_list MAIN body END
-    (73) program -> PROGRAM ID . SEMI_COLON vars MAIN body END
-    (74) program -> PROGRAM ID . SEMI_COLON MAIN body END
+    (78) program -> PROGRAM ID . SEMI_COLON program_start vars func_list MAIN main_start body program_end END
+    (79) program -> PROGRAM ID . SEMI_COLON program_start func_list MAIN main_start body program_end END
+    (80) program -> PROGRAM ID . SEMI_COLON program_start vars MAIN main_start body program_end END
+    (81) program -> PROGRAM ID . SEMI_COLON program_start MAIN main_start body program_end END
 
     SEMI_COLON      shift and go to state 4
 
 
 state 4
 
-    (71) program -> PROGRAM ID SEMI_COLON . vars func_list MAIN body END
-    (72) program -> PROGRAM ID SEMI_COLON . func_list MAIN body END
-    (73) program -> PROGRAM ID SEMI_COLON . vars MAIN body END
-    (74) program -> PROGRAM ID SEMI_COLON . MAIN body END
-    (1) vars -> . VAR var_list
-    (75) func_list -> . funcs func_list_prime
-    (64) funcs -> . VOID ID L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET vars body R_SBRACKET SEMI_COLON
-    (65) funcs -> . VOID ID L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET body R_SBRACKET SEMI_COLON
-    (66) funcs -> . VOID ID L_PARENTHESIS R_PARENTHESIS L_SBRACKET vars body R_SBRACKET SEMI_COLON
-    (67) funcs -> . VOID ID L_PARENTHESIS R_PARENTHESIS L_SBRACKET body R_SBRACKET SEMI_COLON
+    (78) program -> PROGRAM ID SEMI_COLON . program_start vars func_list MAIN main_start body program_end END
+    (79) program -> PROGRAM ID SEMI_COLON . program_start func_list MAIN main_start body program_end END
+    (80) program -> PROGRAM ID SEMI_COLON . program_start vars MAIN main_start body program_end END
+    (81) program -> PROGRAM ID SEMI_COLON . program_start MAIN main_start body program_end END
+    (85) program_start -> . empty
+    (16) empty -> .
 
-    MAIN            shift and go to state 7
-    VAR             shift and go to state 8
-    VOID            shift and go to state 10
+    MAIN            reduce using rule 16 (empty -> .)
+    VAR             reduce using rule 16 (empty -> .)
+    VOID            reduce using rule 16 (empty -> .)
 
-    vars                           shift and go to state 5
-    func_list                      shift and go to state 6
-    funcs                          shift and go to state 9
+    program_start                  shift and go to state 5
+    empty                          shift and go to state 6
 
 state 5
 
-    (71) program -> PROGRAM ID SEMI_COLON vars . func_list MAIN body END
-    (73) program -> PROGRAM ID SEMI_COLON vars . MAIN body END
-    (75) func_list -> . funcs func_list_prime
-    (64) funcs -> . VOID ID L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET vars body R_SBRACKET SEMI_COLON
-    (65) funcs -> . VOID ID L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET body R_SBRACKET SEMI_COLON
-    (66) funcs -> . VOID ID L_PARENTHESIS R_PARENTHESIS L_SBRACKET vars body R_SBRACKET SEMI_COLON
-    (67) funcs -> . VOID ID L_PARENTHESIS R_PARENTHESIS L_SBRACKET body R_SBRACKET SEMI_COLON
+    (78) program -> PROGRAM ID SEMI_COLON program_start . vars func_list MAIN main_start body program_end END
+    (79) program -> PROGRAM ID SEMI_COLON program_start . func_list MAIN main_start body program_end END
+    (80) program -> PROGRAM ID SEMI_COLON program_start . vars MAIN main_start body program_end END
+    (81) program -> PROGRAM ID SEMI_COLON program_start . MAIN main_start body program_end END
+    (1) vars -> . VAR var_list
+    (82) func_list -> . funcs func_list_prime
+    (68) funcs -> . VOID ID func_start L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET vars body R_SBRACKET func_end SEMI_COLON
+    (69) funcs -> . VOID ID func_start L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET body R_SBRACKET func_end SEMI_COLON
+    (70) funcs -> . VOID ID func_start L_PARENTHESIS R_PARENTHESIS L_SBRACKET vars body R_SBRACKET func_end SEMI_COLON
+    (71) funcs -> . VOID ID func_start L_PARENTHESIS R_PARENTHESIS L_SBRACKET body R_SBRACKET func_end SEMI_COLON
 
-    MAIN            shift and go to state 12
-    VOID            shift and go to state 10
+    MAIN            shift and go to state 9
+    VAR             shift and go to state 10
+    VOID            shift and go to state 12
 
-    func_list                      shift and go to state 11
-    funcs                          shift and go to state 9
+    vars                           shift and go to state 7
+    func_list                      shift and go to state 8
+    funcs                          shift and go to state 11
 
 state 6
 
-    (72) program -> PROGRAM ID SEMI_COLON func_list . MAIN body END
+    (85) program_start -> empty .
 
-    MAIN            shift and go to state 13
+    MAIN            reduce using rule 85 (program_start -> empty .)
+    VAR             reduce using rule 85 (program_start -> empty .)
+    VOID            reduce using rule 85 (program_start -> empty .)
 
 
 state 7
 
-    (74) program -> PROGRAM ID SEMI_COLON MAIN . body END
-    (29) body -> . L_CBRACKET R_CBRACKET
-    (30) body -> . L_CBRACKET statement_list R_CBRACKET
+    (78) program -> PROGRAM ID SEMI_COLON program_start vars . func_list MAIN main_start body program_end END
+    (80) program -> PROGRAM ID SEMI_COLON program_start vars . MAIN main_start body program_end END
+    (82) func_list -> . funcs func_list_prime
+    (68) funcs -> . VOID ID func_start L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET vars body R_SBRACKET func_end SEMI_COLON
+    (69) funcs -> . VOID ID func_start L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET body R_SBRACKET func_end SEMI_COLON
+    (70) funcs -> . VOID ID func_start L_PARENTHESIS R_PARENTHESIS L_SBRACKET vars body R_SBRACKET func_end SEMI_COLON
+    (71) funcs -> . VOID ID func_start L_PARENTHESIS R_PARENTHESIS L_SBRACKET body R_SBRACKET func_end SEMI_COLON
 
-    L_CBRACKET      shift and go to state 15
+    MAIN            shift and go to state 14
+    VOID            shift and go to state 12
 
-    body                           shift and go to state 14
+    func_list                      shift and go to state 13
+    funcs                          shift and go to state 11
 
 state 8
+
+    (79) program -> PROGRAM ID SEMI_COLON program_start func_list . MAIN main_start body program_end END
+
+    MAIN            shift and go to state 15
+
+
+state 9
+
+    (81) program -> PROGRAM ID SEMI_COLON program_start MAIN . main_start body program_end END
+    (86) main_start -> . empty
+    (16) empty -> .
+
+    L_CBRACKET      reduce using rule 16 (empty -> .)
+
+    main_start                     shift and go to state 16
+    empty                          shift and go to state 17
+
+state 10
 
     (1) vars -> VAR . var_list
     (2) var_list -> . id_list COLON type SEMI_COLON var_list_prime
     (5) id_list -> . ID id_list_prime
 
-    ID              shift and go to state 18
+    ID              shift and go to state 20
 
-    var_list                       shift and go to state 16
-    id_list                        shift and go to state 17
-
-state 9
-
-    (75) func_list -> funcs . func_list_prime
-    (76) func_list_prime -> . func_list
-    (77) func_list_prime -> . empty
-    (75) func_list -> . funcs func_list_prime
-    (16) empty -> .
-    (64) funcs -> . VOID ID L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET vars body R_SBRACKET SEMI_COLON
-    (65) funcs -> . VOID ID L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET body R_SBRACKET SEMI_COLON
-    (66) funcs -> . VOID ID L_PARENTHESIS R_PARENTHESIS L_SBRACKET vars body R_SBRACKET SEMI_COLON
-    (67) funcs -> . VOID ID L_PARENTHESIS R_PARENTHESIS L_SBRACKET body R_SBRACKET SEMI_COLON
-
-    MAIN            reduce using rule 16 (empty -> .)
-    VOID            shift and go to state 10
-
-    funcs                          shift and go to state 9
-    func_list_prime                shift and go to state 19
-    func_list                      shift and go to state 20
-    empty                          shift and go to state 21
-
-state 10
-
-    (64) funcs -> VOID . ID L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET vars body R_SBRACKET SEMI_COLON
-    (65) funcs -> VOID . ID L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET body R_SBRACKET SEMI_COLON
-    (66) funcs -> VOID . ID L_PARENTHESIS R_PARENTHESIS L_SBRACKET vars body R_SBRACKET SEMI_COLON
-    (67) funcs -> VOID . ID L_PARENTHESIS R_PARENTHESIS L_SBRACKET body R_SBRACKET SEMI_COLON
-
-    ID              shift and go to state 22
-
+    var_list                       shift and go to state 18
+    id_list                        shift and go to state 19
 
 state 11
 
-    (71) program -> PROGRAM ID SEMI_COLON vars func_list . MAIN body END
+    (82) func_list -> funcs . func_list_prime
+    (83) func_list_prime -> . func_list
+    (84) func_list_prime -> . empty
+    (82) func_list -> . funcs func_list_prime
+    (16) empty -> .
+    (68) funcs -> . VOID ID func_start L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET vars body R_SBRACKET func_end SEMI_COLON
+    (69) funcs -> . VOID ID func_start L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET body R_SBRACKET func_end SEMI_COLON
+    (70) funcs -> . VOID ID func_start L_PARENTHESIS R_PARENTHESIS L_SBRACKET vars body R_SBRACKET func_end SEMI_COLON
+    (71) funcs -> . VOID ID func_start L_PARENTHESIS R_PARENTHESIS L_SBRACKET body R_SBRACKET func_end SEMI_COLON
 
-    MAIN            shift and go to state 23
+    MAIN            reduce using rule 16 (empty -> .)
+    VOID            shift and go to state 12
 
+    funcs                          shift and go to state 11
+    func_list_prime                shift and go to state 21
+    func_list                      shift and go to state 22
+    empty                          shift and go to state 23
 
 state 12
 
-    (73) program -> PROGRAM ID SEMI_COLON vars MAIN . body END
-    (29) body -> . L_CBRACKET R_CBRACKET
-    (30) body -> . L_CBRACKET statement_list R_CBRACKET
+    (68) funcs -> VOID . ID func_start L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET vars body R_SBRACKET func_end SEMI_COLON
+    (69) funcs -> VOID . ID func_start L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET body R_SBRACKET func_end SEMI_COLON
+    (70) funcs -> VOID . ID func_start L_PARENTHESIS R_PARENTHESIS L_SBRACKET vars body R_SBRACKET func_end SEMI_COLON
+    (71) funcs -> VOID . ID func_start L_PARENTHESIS R_PARENTHESIS L_SBRACKET body R_SBRACKET func_end SEMI_COLON
 
-    L_CBRACKET      shift and go to state 15
+    ID              shift and go to state 24
 
-    body                           shift and go to state 24
 
 state 13
 
-    (72) program -> PROGRAM ID SEMI_COLON func_list MAIN . body END
-    (29) body -> . L_CBRACKET R_CBRACKET
-    (30) body -> . L_CBRACKET statement_list R_CBRACKET
+    (78) program -> PROGRAM ID SEMI_COLON program_start vars func_list . MAIN main_start body program_end END
 
-    L_CBRACKET      shift and go to state 15
+    MAIN            shift and go to state 25
 
-    body                           shift and go to state 25
 
 state 14
 
-    (74) program -> PROGRAM ID SEMI_COLON MAIN body . END
+    (80) program -> PROGRAM ID SEMI_COLON program_start vars MAIN . main_start body program_end END
+    (86) main_start -> . empty
+    (16) empty -> .
 
-    END             shift and go to state 26
+    L_CBRACKET      reduce using rule 16 (empty -> .)
 
+    main_start                     shift and go to state 26
+    empty                          shift and go to state 17
 
 state 15
 
-    (29) body -> L_CBRACKET . R_CBRACKET
-    (30) body -> L_CBRACKET . statement_list R_CBRACKET
-    (31) statement_list -> . statement statement_list_prime
-    (34) statement -> . assign
-    (35) statement -> . condition
-    (36) statement -> . cycle
-    (37) statement -> . f_call
-    (38) statement -> . print_stmt
-    (78) assign -> . ID EQUAL expression SEMI_COLON
-    (39) condition -> . IF begin_if expression end_if body else_part SEMI_COLON
-    (47) cycle -> . WHILE begin_while while_expression R_PARENTHESIS DO body end_while SEMI_COLON
-    (24) f_call -> . ID L_PARENTHESIS R_PARENTHESIS SEMI_COLON
-    (25) f_call -> . ID L_PARENTHESIS expression_list R_PARENTHESIS SEMI_COLON
-    (51) print_stmt -> . PRINT L_PARENTHESIS print_expression_list R_PARENTHESIS SEMI_COLON
+    (79) program -> PROGRAM ID SEMI_COLON program_start func_list MAIN . main_start body program_end END
+    (86) main_start -> . empty
+    (16) empty -> .
 
-    R_CBRACKET      shift and go to state 27
-    ID              shift and go to state 35
-    IF              shift and go to state 36
-    WHILE           shift and go to state 37
-    PRINT           shift and go to state 38
+    L_CBRACKET      reduce using rule 16 (empty -> .)
 
-    statement_list                 shift and go to state 28
-    statement                      shift and go to state 29
-    assign                         shift and go to state 30
-    condition                      shift and go to state 31
-    cycle                          shift and go to state 32
-    f_call                         shift and go to state 33
-    print_stmt                     shift and go to state 34
+    main_start                     shift and go to state 27
+    empty                          shift and go to state 17
 
 state 16
+
+    (81) program -> PROGRAM ID SEMI_COLON program_start MAIN main_start . body program_end END
+    (33) body -> . L_CBRACKET R_CBRACKET
+    (34) body -> . L_CBRACKET statement_list R_CBRACKET
+
+    L_CBRACKET      shift and go to state 29
+
+    body                           shift and go to state 28
+
+state 17
+
+    (86) main_start -> empty .
+
+    L_CBRACKET      reduce using rule 86 (main_start -> empty .)
+
+
+state 18
 
     (1) vars -> VAR var_list .
 
@@ -373,538 +399,385 @@ state 16
     L_CBRACKET      reduce using rule 1 (vars -> VAR var_list .)
 
 
-state 17
+state 19
 
     (2) var_list -> id_list . COLON type SEMI_COLON var_list_prime
 
-    COLON           shift and go to state 39
+    COLON           shift and go to state 30
 
 
-state 18
+state 20
 
     (5) id_list -> ID . id_list_prime
     (6) id_list_prime -> . COMMA id_list
     (7) id_list_prime -> . empty
     (16) empty -> .
 
-    COMMA           shift and go to state 41
+    COMMA           shift and go to state 32
     COLON           reduce using rule 16 (empty -> .)
 
-    id_list_prime                  shift and go to state 40
-    empty                          shift and go to state 42
-
-state 19
-
-    (75) func_list -> funcs func_list_prime .
-
-    MAIN            reduce using rule 75 (func_list -> funcs func_list_prime .)
-
-
-state 20
-
-    (76) func_list_prime -> func_list .
-
-    MAIN            reduce using rule 76 (func_list_prime -> func_list .)
-
+    id_list_prime                  shift and go to state 31
+    empty                          shift and go to state 33
 
 state 21
 
-    (77) func_list_prime -> empty .
+    (82) func_list -> funcs func_list_prime .
 
-    MAIN            reduce using rule 77 (func_list_prime -> empty .)
+    MAIN            reduce using rule 82 (func_list -> funcs func_list_prime .)
 
 
 state 22
 
-    (64) funcs -> VOID ID . L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET vars body R_SBRACKET SEMI_COLON
-    (65) funcs -> VOID ID . L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET body R_SBRACKET SEMI_COLON
-    (66) funcs -> VOID ID . L_PARENTHESIS R_PARENTHESIS L_SBRACKET vars body R_SBRACKET SEMI_COLON
-    (67) funcs -> VOID ID . L_PARENTHESIS R_PARENTHESIS L_SBRACKET body R_SBRACKET SEMI_COLON
+    (83) func_list_prime -> func_list .
 
-    L_PARENTHESIS   shift and go to state 43
+    MAIN            reduce using rule 83 (func_list_prime -> func_list .)
 
 
 state 23
 
-    (71) program -> PROGRAM ID SEMI_COLON vars func_list MAIN . body END
-    (29) body -> . L_CBRACKET R_CBRACKET
-    (30) body -> . L_CBRACKET statement_list R_CBRACKET
+    (84) func_list_prime -> empty .
 
-    L_CBRACKET      shift and go to state 15
+    MAIN            reduce using rule 84 (func_list_prime -> empty .)
 
-    body                           shift and go to state 44
 
 state 24
 
-    (73) program -> PROGRAM ID SEMI_COLON vars MAIN body . END
+    (68) funcs -> VOID ID . func_start L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET vars body R_SBRACKET func_end SEMI_COLON
+    (69) funcs -> VOID ID . func_start L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET body R_SBRACKET func_end SEMI_COLON
+    (70) funcs -> VOID ID . func_start L_PARENTHESIS R_PARENTHESIS L_SBRACKET vars body R_SBRACKET func_end SEMI_COLON
+    (71) funcs -> VOID ID . func_start L_PARENTHESIS R_PARENTHESIS L_SBRACKET body R_SBRACKET func_end SEMI_COLON
+    (76) func_start -> . empty
+    (16) empty -> .
 
-    END             shift and go to state 45
+    L_PARENTHESIS   reduce using rule 16 (empty -> .)
 
+    func_start                     shift and go to state 34
+    empty                          shift and go to state 35
 
 state 25
 
-    (72) program -> PROGRAM ID SEMI_COLON func_list MAIN body . END
+    (78) program -> PROGRAM ID SEMI_COLON program_start vars func_list MAIN . main_start body program_end END
+    (86) main_start -> . empty
+    (16) empty -> .
 
-    END             shift and go to state 46
+    L_CBRACKET      reduce using rule 16 (empty -> .)
 
+    main_start                     shift and go to state 36
+    empty                          shift and go to state 17
 
 state 26
 
-    (74) program -> PROGRAM ID SEMI_COLON MAIN body END .
+    (80) program -> PROGRAM ID SEMI_COLON program_start vars MAIN main_start . body program_end END
+    (33) body -> . L_CBRACKET R_CBRACKET
+    (34) body -> . L_CBRACKET statement_list R_CBRACKET
 
-    $end            reduce using rule 74 (program -> PROGRAM ID SEMI_COLON MAIN body END .)
+    L_CBRACKET      shift and go to state 29
 
+    body                           shift and go to state 37
 
 state 27
 
-    (29) body -> L_CBRACKET R_CBRACKET .
+    (79) program -> PROGRAM ID SEMI_COLON program_start func_list MAIN main_start . body program_end END
+    (33) body -> . L_CBRACKET R_CBRACKET
+    (34) body -> . L_CBRACKET statement_list R_CBRACKET
 
-    END             reduce using rule 29 (body -> L_CBRACKET R_CBRACKET .)
-    R_SBRACKET      reduce using rule 29 (body -> L_CBRACKET R_CBRACKET .)
-    ELSE            reduce using rule 29 (body -> L_CBRACKET R_CBRACKET .)
-    SEMI_COLON      reduce using rule 29 (body -> L_CBRACKET R_CBRACKET .)
+    L_CBRACKET      shift and go to state 29
 
+    body                           shift and go to state 38
 
 state 28
 
-    (30) body -> L_CBRACKET statement_list . R_CBRACKET
+    (81) program -> PROGRAM ID SEMI_COLON program_start MAIN main_start body . program_end END
+    (87) program_end -> . empty
+    (16) empty -> .
 
-    R_CBRACKET      shift and go to state 47
+    END             reduce using rule 16 (empty -> .)
 
+    program_end                    shift and go to state 39
+    empty                          shift and go to state 40
 
 state 29
 
-    (31) statement_list -> statement . statement_list_prime
-    (32) statement_list_prime -> . statement_list
-    (33) statement_list_prime -> . empty
-    (31) statement_list -> . statement statement_list_prime
-    (16) empty -> .
-    (34) statement -> . assign
-    (35) statement -> . condition
-    (36) statement -> . cycle
-    (37) statement -> . f_call
-    (38) statement -> . print_stmt
-    (78) assign -> . ID EQUAL expression SEMI_COLON
-    (39) condition -> . IF begin_if expression end_if body else_part SEMI_COLON
-    (47) cycle -> . WHILE begin_while while_expression R_PARENTHESIS DO body end_while SEMI_COLON
-    (24) f_call -> . ID L_PARENTHESIS R_PARENTHESIS SEMI_COLON
-    (25) f_call -> . ID L_PARENTHESIS expression_list R_PARENTHESIS SEMI_COLON
-    (51) print_stmt -> . PRINT L_PARENTHESIS print_expression_list R_PARENTHESIS SEMI_COLON
+    (33) body -> L_CBRACKET . R_CBRACKET
+    (34) body -> L_CBRACKET . statement_list R_CBRACKET
+    (35) statement_list -> . statement statement_list_prime
+    (38) statement -> . assign
+    (39) statement -> . condition
+    (40) statement -> . cycle
+    (41) statement -> . f_call
+    (42) statement -> . print_stmt
+    (88) assign -> . ID EQUAL expression SEMI_COLON
+    (43) condition -> . IF begin_if expression end_if body else_part SEMI_COLON
+    (51) cycle -> . WHILE begin_while while_expression R_PARENTHESIS DO body end_while SEMI_COLON
+    (24) f_call -> . ID era L_PARENTHESIS R_PARENTHESIS gosub SEMI_COLON
+    (25) f_call -> . ID era L_PARENTHESIS expression_list R_PARENTHESIS gosub SEMI_COLON
+    (55) print_stmt -> . PRINT L_PARENTHESIS print_expression_list R_PARENTHESIS SEMI_COLON
 
-    R_CBRACKET      reduce using rule 16 (empty -> .)
-    ID              shift and go to state 35
-    IF              shift and go to state 36
-    WHILE           shift and go to state 37
-    PRINT           shift and go to state 38
+    R_CBRACKET      shift and go to state 41
+    ID              shift and go to state 49
+    IF              shift and go to state 50
+    WHILE           shift and go to state 51
+    PRINT           shift and go to state 52
 
-    statement                      shift and go to state 29
-    statement_list_prime           shift and go to state 48
-    statement_list                 shift and go to state 49
-    empty                          shift and go to state 50
-    assign                         shift and go to state 30
-    condition                      shift and go to state 31
-    cycle                          shift and go to state 32
-    f_call                         shift and go to state 33
-    print_stmt                     shift and go to state 34
+    statement_list                 shift and go to state 42
+    statement                      shift and go to state 43
+    assign                         shift and go to state 44
+    condition                      shift and go to state 45
+    cycle                          shift and go to state 46
+    f_call                         shift and go to state 47
+    print_stmt                     shift and go to state 48
 
 state 30
-
-    (34) statement -> assign .
-
-    ID              reduce using rule 34 (statement -> assign .)
-    IF              reduce using rule 34 (statement -> assign .)
-    WHILE           reduce using rule 34 (statement -> assign .)
-    PRINT           reduce using rule 34 (statement -> assign .)
-    R_CBRACKET      reduce using rule 34 (statement -> assign .)
-
-
-state 31
-
-    (35) statement -> condition .
-
-    ID              reduce using rule 35 (statement -> condition .)
-    IF              reduce using rule 35 (statement -> condition .)
-    WHILE           reduce using rule 35 (statement -> condition .)
-    PRINT           reduce using rule 35 (statement -> condition .)
-    R_CBRACKET      reduce using rule 35 (statement -> condition .)
-
-
-state 32
-
-    (36) statement -> cycle .
-
-    ID              reduce using rule 36 (statement -> cycle .)
-    IF              reduce using rule 36 (statement -> cycle .)
-    WHILE           reduce using rule 36 (statement -> cycle .)
-    PRINT           reduce using rule 36 (statement -> cycle .)
-    R_CBRACKET      reduce using rule 36 (statement -> cycle .)
-
-
-state 33
-
-    (37) statement -> f_call .
-
-    ID              reduce using rule 37 (statement -> f_call .)
-    IF              reduce using rule 37 (statement -> f_call .)
-    WHILE           reduce using rule 37 (statement -> f_call .)
-    PRINT           reduce using rule 37 (statement -> f_call .)
-    R_CBRACKET      reduce using rule 37 (statement -> f_call .)
-
-
-state 34
-
-    (38) statement -> print_stmt .
-
-    ID              reduce using rule 38 (statement -> print_stmt .)
-    IF              reduce using rule 38 (statement -> print_stmt .)
-    WHILE           reduce using rule 38 (statement -> print_stmt .)
-    PRINT           reduce using rule 38 (statement -> print_stmt .)
-    R_CBRACKET      reduce using rule 38 (statement -> print_stmt .)
-
-
-state 35
-
-    (78) assign -> ID . EQUAL expression SEMI_COLON
-    (24) f_call -> ID . L_PARENTHESIS R_PARENTHESIS SEMI_COLON
-    (25) f_call -> ID . L_PARENTHESIS expression_list R_PARENTHESIS SEMI_COLON
-
-    EQUAL           shift and go to state 51
-    L_PARENTHESIS   shift and go to state 52
-
-
-state 36
-
-    (39) condition -> IF . begin_if expression end_if body else_part SEMI_COLON
-    (42) begin_if -> . L_PARENTHESIS
-
-    L_PARENTHESIS   shift and go to state 54
-
-    begin_if                       shift and go to state 53
-
-state 37
-
-    (47) cycle -> WHILE . begin_while while_expression R_PARENTHESIS DO body end_while SEMI_COLON
-    (48) begin_while -> . L_PARENTHESIS
-
-    L_PARENTHESIS   shift and go to state 56
-
-    begin_while                    shift and go to state 55
-
-state 38
-
-    (51) print_stmt -> PRINT . L_PARENTHESIS print_expression_list R_PARENTHESIS SEMI_COLON
-
-    L_PARENTHESIS   shift and go to state 57
-
-
-state 39
 
     (2) var_list -> id_list COLON . type SEMI_COLON var_list_prime
     (14) type -> . INT
     (15) type -> . FLOAT
 
-    INT             shift and go to state 59
-    FLOAT           shift and go to state 60
+    INT             shift and go to state 54
+    FLOAT           shift and go to state 55
 
-    type                           shift and go to state 58
+    type                           shift and go to state 53
 
-state 40
+state 31
 
     (5) id_list -> ID id_list_prime .
 
     COLON           reduce using rule 5 (id_list -> ID id_list_prime .)
 
 
-state 41
+state 32
 
     (6) id_list_prime -> COMMA . id_list
     (5) id_list -> . ID id_list_prime
 
-    ID              shift and go to state 18
+    ID              shift and go to state 20
 
-    id_list                        shift and go to state 61
+    id_list                        shift and go to state 56
 
-state 42
+state 33
 
     (7) id_list_prime -> empty .
 
     COLON           reduce using rule 7 (id_list_prime -> empty .)
 
 
+state 34
+
+    (68) funcs -> VOID ID func_start . L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET vars body R_SBRACKET func_end SEMI_COLON
+    (69) funcs -> VOID ID func_start . L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET body R_SBRACKET func_end SEMI_COLON
+    (70) funcs -> VOID ID func_start . L_PARENTHESIS R_PARENTHESIS L_SBRACKET vars body R_SBRACKET func_end SEMI_COLON
+    (71) funcs -> VOID ID func_start . L_PARENTHESIS R_PARENTHESIS L_SBRACKET body R_SBRACKET func_end SEMI_COLON
+
+    L_PARENTHESIS   shift and go to state 57
+
+
+state 35
+
+    (76) func_start -> empty .
+
+    L_PARENTHESIS   reduce using rule 76 (func_start -> empty .)
+
+
+state 36
+
+    (78) program -> PROGRAM ID SEMI_COLON program_start vars func_list MAIN main_start . body program_end END
+    (33) body -> . L_CBRACKET R_CBRACKET
+    (34) body -> . L_CBRACKET statement_list R_CBRACKET
+
+    L_CBRACKET      shift and go to state 29
+
+    body                           shift and go to state 58
+
+state 37
+
+    (80) program -> PROGRAM ID SEMI_COLON program_start vars MAIN main_start body . program_end END
+    (87) program_end -> . empty
+    (16) empty -> .
+
+    END             reduce using rule 16 (empty -> .)
+
+    program_end                    shift and go to state 59
+    empty                          shift and go to state 40
+
+state 38
+
+    (79) program -> PROGRAM ID SEMI_COLON program_start func_list MAIN main_start body . program_end END
+    (87) program_end -> . empty
+    (16) empty -> .
+
+    END             reduce using rule 16 (empty -> .)
+
+    program_end                    shift and go to state 60
+    empty                          shift and go to state 40
+
+state 39
+
+    (81) program -> PROGRAM ID SEMI_COLON program_start MAIN main_start body program_end . END
+
+    END             shift and go to state 61
+
+
+state 40
+
+    (87) program_end -> empty .
+
+    END             reduce using rule 87 (program_end -> empty .)
+
+
+state 41
+
+    (33) body -> L_CBRACKET R_CBRACKET .
+
+    END             reduce using rule 33 (body -> L_CBRACKET R_CBRACKET .)
+    R_SBRACKET      reduce using rule 33 (body -> L_CBRACKET R_CBRACKET .)
+    ELSE            reduce using rule 33 (body -> L_CBRACKET R_CBRACKET .)
+    SEMI_COLON      reduce using rule 33 (body -> L_CBRACKET R_CBRACKET .)
+
+
+state 42
+
+    (34) body -> L_CBRACKET statement_list . R_CBRACKET
+
+    R_CBRACKET      shift and go to state 62
+
+
 state 43
 
-    (64) funcs -> VOID ID L_PARENTHESIS . param_list R_PARENTHESIS L_SBRACKET vars body R_SBRACKET SEMI_COLON
-    (65) funcs -> VOID ID L_PARENTHESIS . param_list R_PARENTHESIS L_SBRACKET body R_SBRACKET SEMI_COLON
-    (66) funcs -> VOID ID L_PARENTHESIS . R_PARENTHESIS L_SBRACKET vars body R_SBRACKET SEMI_COLON
-    (67) funcs -> VOID ID L_PARENTHESIS . R_PARENTHESIS L_SBRACKET body R_SBRACKET SEMI_COLON
-    (68) param_list -> . ID COLON type param_list_prime
+    (35) statement_list -> statement . statement_list_prime
+    (36) statement_list_prime -> . statement_list
+    (37) statement_list_prime -> . empty
+    (35) statement_list -> . statement statement_list_prime
+    (16) empty -> .
+    (38) statement -> . assign
+    (39) statement -> . condition
+    (40) statement -> . cycle
+    (41) statement -> . f_call
+    (42) statement -> . print_stmt
+    (88) assign -> . ID EQUAL expression SEMI_COLON
+    (43) condition -> . IF begin_if expression end_if body else_part SEMI_COLON
+    (51) cycle -> . WHILE begin_while while_expression R_PARENTHESIS DO body end_while SEMI_COLON
+    (24) f_call -> . ID era L_PARENTHESIS R_PARENTHESIS gosub SEMI_COLON
+    (25) f_call -> . ID era L_PARENTHESIS expression_list R_PARENTHESIS gosub SEMI_COLON
+    (55) print_stmt -> . PRINT L_PARENTHESIS print_expression_list R_PARENTHESIS SEMI_COLON
 
-    R_PARENTHESIS   shift and go to state 64
-    ID              shift and go to state 62
+    R_CBRACKET      reduce using rule 16 (empty -> .)
+    ID              shift and go to state 49
+    IF              shift and go to state 50
+    WHILE           shift and go to state 51
+    PRINT           shift and go to state 52
 
-    param_list                     shift and go to state 63
+    statement                      shift and go to state 43
+    statement_list_prime           shift and go to state 63
+    statement_list                 shift and go to state 64
+    empty                          shift and go to state 65
+    assign                         shift and go to state 44
+    condition                      shift and go to state 45
+    cycle                          shift and go to state 46
+    f_call                         shift and go to state 47
+    print_stmt                     shift and go to state 48
 
 state 44
 
-    (71) program -> PROGRAM ID SEMI_COLON vars func_list MAIN body . END
+    (38) statement -> assign .
 
-    END             shift and go to state 65
+    ID              reduce using rule 38 (statement -> assign .)
+    IF              reduce using rule 38 (statement -> assign .)
+    WHILE           reduce using rule 38 (statement -> assign .)
+    PRINT           reduce using rule 38 (statement -> assign .)
+    R_CBRACKET      reduce using rule 38 (statement -> assign .)
 
 
 state 45
 
-    (73) program -> PROGRAM ID SEMI_COLON vars MAIN body END .
+    (39) statement -> condition .
 
-    $end            reduce using rule 73 (program -> PROGRAM ID SEMI_COLON vars MAIN body END .)
+    ID              reduce using rule 39 (statement -> condition .)
+    IF              reduce using rule 39 (statement -> condition .)
+    WHILE           reduce using rule 39 (statement -> condition .)
+    PRINT           reduce using rule 39 (statement -> condition .)
+    R_CBRACKET      reduce using rule 39 (statement -> condition .)
 
 
 state 46
 
-    (72) program -> PROGRAM ID SEMI_COLON func_list MAIN body END .
+    (40) statement -> cycle .
 
-    $end            reduce using rule 72 (program -> PROGRAM ID SEMI_COLON func_list MAIN body END .)
+    ID              reduce using rule 40 (statement -> cycle .)
+    IF              reduce using rule 40 (statement -> cycle .)
+    WHILE           reduce using rule 40 (statement -> cycle .)
+    PRINT           reduce using rule 40 (statement -> cycle .)
+    R_CBRACKET      reduce using rule 40 (statement -> cycle .)
 
 
 state 47
 
-    (30) body -> L_CBRACKET statement_list R_CBRACKET .
+    (41) statement -> f_call .
 
-    END             reduce using rule 30 (body -> L_CBRACKET statement_list R_CBRACKET .)
-    R_SBRACKET      reduce using rule 30 (body -> L_CBRACKET statement_list R_CBRACKET .)
-    ELSE            reduce using rule 30 (body -> L_CBRACKET statement_list R_CBRACKET .)
-    SEMI_COLON      reduce using rule 30 (body -> L_CBRACKET statement_list R_CBRACKET .)
+    ID              reduce using rule 41 (statement -> f_call .)
+    IF              reduce using rule 41 (statement -> f_call .)
+    WHILE           reduce using rule 41 (statement -> f_call .)
+    PRINT           reduce using rule 41 (statement -> f_call .)
+    R_CBRACKET      reduce using rule 41 (statement -> f_call .)
 
 
 state 48
 
-    (31) statement_list -> statement statement_list_prime .
+    (42) statement -> print_stmt .
 
-    R_CBRACKET      reduce using rule 31 (statement_list -> statement statement_list_prime .)
+    ID              reduce using rule 42 (statement -> print_stmt .)
+    IF              reduce using rule 42 (statement -> print_stmt .)
+    WHILE           reduce using rule 42 (statement -> print_stmt .)
+    PRINT           reduce using rule 42 (statement -> print_stmt .)
+    R_CBRACKET      reduce using rule 42 (statement -> print_stmt .)
 
 
 state 49
 
-    (32) statement_list_prime -> statement_list .
+    (88) assign -> ID . EQUAL expression SEMI_COLON
+    (24) f_call -> ID . era L_PARENTHESIS R_PARENTHESIS gosub SEMI_COLON
+    (25) f_call -> ID . era L_PARENTHESIS expression_list R_PARENTHESIS gosub SEMI_COLON
+    (30) era -> . empty
+    (16) empty -> .
 
-    R_CBRACKET      reduce using rule 32 (statement_list_prime -> statement_list .)
+    EQUAL           shift and go to state 66
+    L_PARENTHESIS   reduce using rule 16 (empty -> .)
 
+    era                            shift and go to state 67
+    empty                          shift and go to state 68
 
 state 50
 
-    (33) statement_list_prime -> empty .
+    (43) condition -> IF . begin_if expression end_if body else_part SEMI_COLON
+    (46) begin_if -> . L_PARENTHESIS
 
-    R_CBRACKET      reduce using rule 33 (statement_list_prime -> empty .)
+    L_PARENTHESIS   shift and go to state 70
 
+    begin_if                       shift and go to state 69
 
 state 51
 
-    (78) assign -> ID EQUAL . expression SEMI_COLON
-    (19) expression -> . exp expression_prime
-    (8) exp -> . exp PLUS termino
-    (9) exp -> . exp MINUS termino
-    (10) exp -> . termino
-    (11) termino -> . termino ASTERISK factor
-    (12) termino -> . termino FORWARD_SLASH factor
-    (13) termino -> . factor
-    (57) factor -> . L_PARENTHESIS expression R_PARENTHESIS
-    (58) factor -> . PLUS ID
-    (59) factor -> . PLUS cte
-    (60) factor -> . MINUS ID
-    (61) factor -> . MINUS cte
-    (62) factor -> . ID
-    (63) factor -> . cte
-    (17) cte -> . CNT_INT
-    (18) cte -> . CNT_FLOAT
+    (51) cycle -> WHILE . begin_while while_expression R_PARENTHESIS DO body end_while SEMI_COLON
+    (52) begin_while -> . L_PARENTHESIS
 
-    L_PARENTHESIS   shift and go to state 73
-    PLUS            shift and go to state 69
-    MINUS           shift and go to state 71
-    ID              shift and go to state 66
-    CNT_INT         shift and go to state 75
-    CNT_FLOAT       shift and go to state 76
+    L_PARENTHESIS   shift and go to state 72
 
-    expression                     shift and go to state 67
-    exp                            shift and go to state 68
-    termino                        shift and go to state 70
-    factor                         shift and go to state 72
-    cte                            shift and go to state 74
+    begin_while                    shift and go to state 71
 
 state 52
 
-    (24) f_call -> ID L_PARENTHESIS . R_PARENTHESIS SEMI_COLON
-    (25) f_call -> ID L_PARENTHESIS . expression_list R_PARENTHESIS SEMI_COLON
-    (26) expression_list -> . expression expression_list_prime
-    (19) expression -> . exp expression_prime
-    (8) exp -> . exp PLUS termino
-    (9) exp -> . exp MINUS termino
-    (10) exp -> . termino
-    (11) termino -> . termino ASTERISK factor
-    (12) termino -> . termino FORWARD_SLASH factor
-    (13) termino -> . factor
-    (57) factor -> . L_PARENTHESIS expression R_PARENTHESIS
-    (58) factor -> . PLUS ID
-    (59) factor -> . PLUS cte
-    (60) factor -> . MINUS ID
-    (61) factor -> . MINUS cte
-    (62) factor -> . ID
-    (63) factor -> . cte
-    (17) cte -> . CNT_INT
-    (18) cte -> . CNT_FLOAT
+    (55) print_stmt -> PRINT . L_PARENTHESIS print_expression_list R_PARENTHESIS SEMI_COLON
 
-    R_PARENTHESIS   shift and go to state 77
     L_PARENTHESIS   shift and go to state 73
-    PLUS            shift and go to state 69
-    MINUS           shift and go to state 71
-    ID              shift and go to state 66
-    CNT_INT         shift and go to state 75
-    CNT_FLOAT       shift and go to state 76
 
-    expression_list                shift and go to state 78
-    expression                     shift and go to state 79
-    exp                            shift and go to state 68
-    termino                        shift and go to state 70
-    factor                         shift and go to state 72
-    cte                            shift and go to state 74
 
 state 53
 
-    (39) condition -> IF begin_if . expression end_if body else_part SEMI_COLON
-    (19) expression -> . exp expression_prime
-    (8) exp -> . exp PLUS termino
-    (9) exp -> . exp MINUS termino
-    (10) exp -> . termino
-    (11) termino -> . termino ASTERISK factor
-    (12) termino -> . termino FORWARD_SLASH factor
-    (13) termino -> . factor
-    (57) factor -> . L_PARENTHESIS expression R_PARENTHESIS
-    (58) factor -> . PLUS ID
-    (59) factor -> . PLUS cte
-    (60) factor -> . MINUS ID
-    (61) factor -> . MINUS cte
-    (62) factor -> . ID
-    (63) factor -> . cte
-    (17) cte -> . CNT_INT
-    (18) cte -> . CNT_FLOAT
-
-    L_PARENTHESIS   shift and go to state 73
-    PLUS            shift and go to state 69
-    MINUS           shift and go to state 71
-    ID              shift and go to state 66
-    CNT_INT         shift and go to state 75
-    CNT_FLOAT       shift and go to state 76
-
-    expression                     shift and go to state 80
-    exp                            shift and go to state 68
-    termino                        shift and go to state 70
-    factor                         shift and go to state 72
-    cte                            shift and go to state 74
-
-state 54
-
-    (42) begin_if -> L_PARENTHESIS .
-
-    L_PARENTHESIS   reduce using rule 42 (begin_if -> L_PARENTHESIS .)
-    PLUS            reduce using rule 42 (begin_if -> L_PARENTHESIS .)
-    MINUS           reduce using rule 42 (begin_if -> L_PARENTHESIS .)
-    ID              reduce using rule 42 (begin_if -> L_PARENTHESIS .)
-    CNT_INT         reduce using rule 42 (begin_if -> L_PARENTHESIS .)
-    CNT_FLOAT       reduce using rule 42 (begin_if -> L_PARENTHESIS .)
-
-
-state 55
-
-    (47) cycle -> WHILE begin_while . while_expression R_PARENTHESIS DO body end_while SEMI_COLON
-    (49) while_expression -> . expression
-    (19) expression -> . exp expression_prime
-    (8) exp -> . exp PLUS termino
-    (9) exp -> . exp MINUS termino
-    (10) exp -> . termino
-    (11) termino -> . termino ASTERISK factor
-    (12) termino -> . termino FORWARD_SLASH factor
-    (13) termino -> . factor
-    (57) factor -> . L_PARENTHESIS expression R_PARENTHESIS
-    (58) factor -> . PLUS ID
-    (59) factor -> . PLUS cte
-    (60) factor -> . MINUS ID
-    (61) factor -> . MINUS cte
-    (62) factor -> . ID
-    (63) factor -> . cte
-    (17) cte -> . CNT_INT
-    (18) cte -> . CNT_FLOAT
-
-    L_PARENTHESIS   shift and go to state 73
-    PLUS            shift and go to state 69
-    MINUS           shift and go to state 71
-    ID              shift and go to state 66
-    CNT_INT         shift and go to state 75
-    CNT_FLOAT       shift and go to state 76
-
-    while_expression               shift and go to state 81
-    expression                     shift and go to state 82
-    exp                            shift and go to state 68
-    termino                        shift and go to state 70
-    factor                         shift and go to state 72
-    cte                            shift and go to state 74
-
-state 56
-
-    (48) begin_while -> L_PARENTHESIS .
-
-    L_PARENTHESIS   reduce using rule 48 (begin_while -> L_PARENTHESIS .)
-    PLUS            reduce using rule 48 (begin_while -> L_PARENTHESIS .)
-    MINUS           reduce using rule 48 (begin_while -> L_PARENTHESIS .)
-    ID              reduce using rule 48 (begin_while -> L_PARENTHESIS .)
-    CNT_INT         reduce using rule 48 (begin_while -> L_PARENTHESIS .)
-    CNT_FLOAT       reduce using rule 48 (begin_while -> L_PARENTHESIS .)
-
-
-state 57
-
-    (51) print_stmt -> PRINT L_PARENTHESIS . print_expression_list R_PARENTHESIS SEMI_COLON
-    (52) print_expression_list -> . print_item print_expression_list_prime
-    (53) print_item -> . expression
-    (54) print_item -> . CNT_STRING
-    (19) expression -> . exp expression_prime
-    (8) exp -> . exp PLUS termino
-    (9) exp -> . exp MINUS termino
-    (10) exp -> . termino
-    (11) termino -> . termino ASTERISK factor
-    (12) termino -> . termino FORWARD_SLASH factor
-    (13) termino -> . factor
-    (57) factor -> . L_PARENTHESIS expression R_PARENTHESIS
-    (58) factor -> . PLUS ID
-    (59) factor -> . PLUS cte
-    (60) factor -> . MINUS ID
-    (61) factor -> . MINUS cte
-    (62) factor -> . ID
-    (63) factor -> . cte
-    (17) cte -> . CNT_INT
-    (18) cte -> . CNT_FLOAT
-
-    CNT_STRING      shift and go to state 86
-    L_PARENTHESIS   shift and go to state 73
-    PLUS            shift and go to state 69
-    MINUS           shift and go to state 71
-    ID              shift and go to state 66
-    CNT_INT         shift and go to state 75
-    CNT_FLOAT       shift and go to state 76
-
-    print_expression_list          shift and go to state 83
-    print_item                     shift and go to state 84
-    expression                     shift and go to state 85
-    exp                            shift and go to state 68
-    termino                        shift and go to state 70
-    factor                         shift and go to state 72
-    cte                            shift and go to state 74
-
-state 58
-
     (2) var_list -> id_list COLON type . SEMI_COLON var_list_prime
 
-    SEMI_COLON      shift and go to state 87
+    SEMI_COLON      shift and go to state 74
 
 
-state 59
+state 54
 
     (14) type -> INT .
 
@@ -913,7 +786,7 @@ state 59
     R_PARENTHESIS   reduce using rule 14 (type -> INT .)
 
 
-state 60
+state 55
 
     (15) type -> FLOAT .
 
@@ -922,152 +795,92 @@ state 60
     R_PARENTHESIS   reduce using rule 15 (type -> FLOAT .)
 
 
-state 61
+state 56
 
     (6) id_list_prime -> COMMA id_list .
 
     COLON           reduce using rule 6 (id_list_prime -> COMMA id_list .)
 
 
+state 57
+
+    (68) funcs -> VOID ID func_start L_PARENTHESIS . param_list R_PARENTHESIS L_SBRACKET vars body R_SBRACKET func_end SEMI_COLON
+    (69) funcs -> VOID ID func_start L_PARENTHESIS . param_list R_PARENTHESIS L_SBRACKET body R_SBRACKET func_end SEMI_COLON
+    (70) funcs -> VOID ID func_start L_PARENTHESIS . R_PARENTHESIS L_SBRACKET vars body R_SBRACKET func_end SEMI_COLON
+    (71) funcs -> VOID ID func_start L_PARENTHESIS . R_PARENTHESIS L_SBRACKET body R_SBRACKET func_end SEMI_COLON
+    (72) param_list -> . ID COLON type param param_list_prime
+
+    R_PARENTHESIS   shift and go to state 77
+    ID              shift and go to state 75
+
+    param_list                     shift and go to state 76
+
+state 58
+
+    (78) program -> PROGRAM ID SEMI_COLON program_start vars func_list MAIN main_start body . program_end END
+    (87) program_end -> . empty
+    (16) empty -> .
+
+    END             reduce using rule 16 (empty -> .)
+
+    program_end                    shift and go to state 78
+    empty                          shift and go to state 40
+
+state 59
+
+    (80) program -> PROGRAM ID SEMI_COLON program_start vars MAIN main_start body program_end . END
+
+    END             shift and go to state 79
+
+
+state 60
+
+    (79) program -> PROGRAM ID SEMI_COLON program_start func_list MAIN main_start body program_end . END
+
+    END             shift and go to state 80
+
+
+state 61
+
+    (81) program -> PROGRAM ID SEMI_COLON program_start MAIN main_start body program_end END .
+
+    $end            reduce using rule 81 (program -> PROGRAM ID SEMI_COLON program_start MAIN main_start body program_end END .)
+
+
 state 62
 
-    (68) param_list -> ID . COLON type param_list_prime
+    (34) body -> L_CBRACKET statement_list R_CBRACKET .
 
-    COLON           shift and go to state 88
+    END             reduce using rule 34 (body -> L_CBRACKET statement_list R_CBRACKET .)
+    R_SBRACKET      reduce using rule 34 (body -> L_CBRACKET statement_list R_CBRACKET .)
+    ELSE            reduce using rule 34 (body -> L_CBRACKET statement_list R_CBRACKET .)
+    SEMI_COLON      reduce using rule 34 (body -> L_CBRACKET statement_list R_CBRACKET .)
 
 
 state 63
 
-    (64) funcs -> VOID ID L_PARENTHESIS param_list . R_PARENTHESIS L_SBRACKET vars body R_SBRACKET SEMI_COLON
-    (65) funcs -> VOID ID L_PARENTHESIS param_list . R_PARENTHESIS L_SBRACKET body R_SBRACKET SEMI_COLON
+    (35) statement_list -> statement statement_list_prime .
 
-    R_PARENTHESIS   shift and go to state 89
+    R_CBRACKET      reduce using rule 35 (statement_list -> statement statement_list_prime .)
 
 
 state 64
 
-    (66) funcs -> VOID ID L_PARENTHESIS R_PARENTHESIS . L_SBRACKET vars body R_SBRACKET SEMI_COLON
-    (67) funcs -> VOID ID L_PARENTHESIS R_PARENTHESIS . L_SBRACKET body R_SBRACKET SEMI_COLON
+    (36) statement_list_prime -> statement_list .
 
-    L_SBRACKET      shift and go to state 90
+    R_CBRACKET      reduce using rule 36 (statement_list_prime -> statement_list .)
 
 
 state 65
 
-    (71) program -> PROGRAM ID SEMI_COLON vars func_list MAIN body END .
+    (37) statement_list_prime -> empty .
 
-    $end            reduce using rule 71 (program -> PROGRAM ID SEMI_COLON vars func_list MAIN body END .)
+    R_CBRACKET      reduce using rule 37 (statement_list_prime -> empty .)
 
 
 state 66
 
-    (62) factor -> ID .
-
-    ASTERISK        reduce using rule 62 (factor -> ID .)
-    FORWARD_SLASH   reduce using rule 62 (factor -> ID .)
-    PLUS            reduce using rule 62 (factor -> ID .)
-    MINUS           reduce using rule 62 (factor -> ID .)
-    GREATER_THAN    reduce using rule 62 (factor -> ID .)
-    LOWER_THAN      reduce using rule 62 (factor -> ID .)
-    NOT_EQUAL       reduce using rule 62 (factor -> ID .)
-    SEMI_COLON      reduce using rule 62 (factor -> ID .)
-    COMMA           reduce using rule 62 (factor -> ID .)
-    R_PARENTHESIS   reduce using rule 62 (factor -> ID .)
-
-
-state 67
-
-    (78) assign -> ID EQUAL expression . SEMI_COLON
-
-    SEMI_COLON      shift and go to state 91
-
-
-state 68
-
-    (19) expression -> exp . expression_prime
-    (8) exp -> exp . PLUS termino
-    (9) exp -> exp . MINUS termino
-    (20) expression_prime -> . GREATER_THAN exp
-    (21) expression_prime -> . LOWER_THAN exp
-    (22) expression_prime -> . NOT_EQUAL exp
-    (23) expression_prime -> . empty
-    (16) empty -> .
-
-    PLUS            shift and go to state 93
-    MINUS           shift and go to state 94
-    GREATER_THAN    shift and go to state 95
-    LOWER_THAN      shift and go to state 96
-    NOT_EQUAL       shift and go to state 97
-    SEMI_COLON      reduce using rule 16 (empty -> .)
-    COMMA           reduce using rule 16 (empty -> .)
-    R_PARENTHESIS   reduce using rule 16 (empty -> .)
-
-    expression_prime               shift and go to state 92
-    empty                          shift and go to state 98
-
-state 69
-
-    (58) factor -> PLUS . ID
-    (59) factor -> PLUS . cte
-    (17) cte -> . CNT_INT
-    (18) cte -> . CNT_FLOAT
-
-    ID              shift and go to state 99
-    CNT_INT         shift and go to state 75
-    CNT_FLOAT       shift and go to state 76
-
-    cte                            shift and go to state 100
-
-state 70
-
-    (10) exp -> termino .
-    (11) termino -> termino . ASTERISK factor
-    (12) termino -> termino . FORWARD_SLASH factor
-
-    PLUS            reduce using rule 10 (exp -> termino .)
-    MINUS           reduce using rule 10 (exp -> termino .)
-    GREATER_THAN    reduce using rule 10 (exp -> termino .)
-    LOWER_THAN      reduce using rule 10 (exp -> termino .)
-    NOT_EQUAL       reduce using rule 10 (exp -> termino .)
-    SEMI_COLON      reduce using rule 10 (exp -> termino .)
-    COMMA           reduce using rule 10 (exp -> termino .)
-    R_PARENTHESIS   reduce using rule 10 (exp -> termino .)
-    ASTERISK        shift and go to state 101
-    FORWARD_SLASH   shift and go to state 102
-
-
-state 71
-
-    (60) factor -> MINUS . ID
-    (61) factor -> MINUS . cte
-    (17) cte -> . CNT_INT
-    (18) cte -> . CNT_FLOAT
-
-    ID              shift and go to state 103
-    CNT_INT         shift and go to state 75
-    CNT_FLOAT       shift and go to state 76
-
-    cte                            shift and go to state 104
-
-state 72
-
-    (13) termino -> factor .
-
-    ASTERISK        reduce using rule 13 (termino -> factor .)
-    FORWARD_SLASH   reduce using rule 13 (termino -> factor .)
-    PLUS            reduce using rule 13 (termino -> factor .)
-    MINUS           reduce using rule 13 (termino -> factor .)
-    GREATER_THAN    reduce using rule 13 (termino -> factor .)
-    LOWER_THAN      reduce using rule 13 (termino -> factor .)
-    NOT_EQUAL       reduce using rule 13 (termino -> factor .)
-    SEMI_COLON      reduce using rule 13 (termino -> factor .)
-    COMMA           reduce using rule 13 (termino -> factor .)
-    R_PARENTHESIS   reduce using rule 13 (termino -> factor .)
-
-
-state 73
-
-    (57) factor -> L_PARENTHESIS . expression R_PARENTHESIS
+    (88) assign -> ID EQUAL . expression SEMI_COLON
     (19) expression -> . exp expression_prime
     (8) exp -> . exp PLUS termino
     (9) exp -> . exp MINUS termino
@@ -1075,164 +888,176 @@ state 73
     (11) termino -> . termino ASTERISK factor
     (12) termino -> . termino FORWARD_SLASH factor
     (13) termino -> . factor
-    (57) factor -> . L_PARENTHESIS expression R_PARENTHESIS
-    (58) factor -> . PLUS ID
-    (59) factor -> . PLUS cte
-    (60) factor -> . MINUS ID
-    (61) factor -> . MINUS cte
-    (62) factor -> . ID
-    (63) factor -> . cte
+    (61) factor -> . L_PARENTHESIS expression R_PARENTHESIS
+    (62) factor -> . PLUS ID
+    (63) factor -> . PLUS cte
+    (64) factor -> . MINUS ID
+    (65) factor -> . MINUS cte
+    (66) factor -> . ID
+    (67) factor -> . cte
     (17) cte -> . CNT_INT
     (18) cte -> . CNT_FLOAT
 
-    L_PARENTHESIS   shift and go to state 73
-    PLUS            shift and go to state 69
-    MINUS           shift and go to state 71
-    ID              shift and go to state 66
-    CNT_INT         shift and go to state 75
-    CNT_FLOAT       shift and go to state 76
+    L_PARENTHESIS   shift and go to state 88
+    PLUS            shift and go to state 84
+    MINUS           shift and go to state 86
+    ID              shift and go to state 81
+    CNT_INT         shift and go to state 90
+    CNT_FLOAT       shift and go to state 91
 
-    expression                     shift and go to state 105
-    exp                            shift and go to state 68
-    termino                        shift and go to state 70
-    factor                         shift and go to state 72
-    cte                            shift and go to state 74
+    expression                     shift and go to state 82
+    exp                            shift and go to state 83
+    termino                        shift and go to state 85
+    factor                         shift and go to state 87
+    cte                            shift and go to state 89
+
+state 67
+
+    (24) f_call -> ID era . L_PARENTHESIS R_PARENTHESIS gosub SEMI_COLON
+    (25) f_call -> ID era . L_PARENTHESIS expression_list R_PARENTHESIS gosub SEMI_COLON
+
+    L_PARENTHESIS   shift and go to state 92
+
+
+state 68
+
+    (30) era -> empty .
+
+    L_PARENTHESIS   reduce using rule 30 (era -> empty .)
+
+
+state 69
+
+    (43) condition -> IF begin_if . expression end_if body else_part SEMI_COLON
+    (19) expression -> . exp expression_prime
+    (8) exp -> . exp PLUS termino
+    (9) exp -> . exp MINUS termino
+    (10) exp -> . termino
+    (11) termino -> . termino ASTERISK factor
+    (12) termino -> . termino FORWARD_SLASH factor
+    (13) termino -> . factor
+    (61) factor -> . L_PARENTHESIS expression R_PARENTHESIS
+    (62) factor -> . PLUS ID
+    (63) factor -> . PLUS cte
+    (64) factor -> . MINUS ID
+    (65) factor -> . MINUS cte
+    (66) factor -> . ID
+    (67) factor -> . cte
+    (17) cte -> . CNT_INT
+    (18) cte -> . CNT_FLOAT
+
+    L_PARENTHESIS   shift and go to state 88
+    PLUS            shift and go to state 84
+    MINUS           shift and go to state 86
+    ID              shift and go to state 81
+    CNT_INT         shift and go to state 90
+    CNT_FLOAT       shift and go to state 91
+
+    expression                     shift and go to state 93
+    exp                            shift and go to state 83
+    termino                        shift and go to state 85
+    factor                         shift and go to state 87
+    cte                            shift and go to state 89
+
+state 70
+
+    (46) begin_if -> L_PARENTHESIS .
+
+    L_PARENTHESIS   reduce using rule 46 (begin_if -> L_PARENTHESIS .)
+    PLUS            reduce using rule 46 (begin_if -> L_PARENTHESIS .)
+    MINUS           reduce using rule 46 (begin_if -> L_PARENTHESIS .)
+    ID              reduce using rule 46 (begin_if -> L_PARENTHESIS .)
+    CNT_INT         reduce using rule 46 (begin_if -> L_PARENTHESIS .)
+    CNT_FLOAT       reduce using rule 46 (begin_if -> L_PARENTHESIS .)
+
+
+state 71
+
+    (51) cycle -> WHILE begin_while . while_expression R_PARENTHESIS DO body end_while SEMI_COLON
+    (53) while_expression -> . expression
+    (19) expression -> . exp expression_prime
+    (8) exp -> . exp PLUS termino
+    (9) exp -> . exp MINUS termino
+    (10) exp -> . termino
+    (11) termino -> . termino ASTERISK factor
+    (12) termino -> . termino FORWARD_SLASH factor
+    (13) termino -> . factor
+    (61) factor -> . L_PARENTHESIS expression R_PARENTHESIS
+    (62) factor -> . PLUS ID
+    (63) factor -> . PLUS cte
+    (64) factor -> . MINUS ID
+    (65) factor -> . MINUS cte
+    (66) factor -> . ID
+    (67) factor -> . cte
+    (17) cte -> . CNT_INT
+    (18) cte -> . CNT_FLOAT
+
+    L_PARENTHESIS   shift and go to state 88
+    PLUS            shift and go to state 84
+    MINUS           shift and go to state 86
+    ID              shift and go to state 81
+    CNT_INT         shift and go to state 90
+    CNT_FLOAT       shift and go to state 91
+
+    while_expression               shift and go to state 94
+    expression                     shift and go to state 95
+    exp                            shift and go to state 83
+    termino                        shift and go to state 85
+    factor                         shift and go to state 87
+    cte                            shift and go to state 89
+
+state 72
+
+    (52) begin_while -> L_PARENTHESIS .
+
+    L_PARENTHESIS   reduce using rule 52 (begin_while -> L_PARENTHESIS .)
+    PLUS            reduce using rule 52 (begin_while -> L_PARENTHESIS .)
+    MINUS           reduce using rule 52 (begin_while -> L_PARENTHESIS .)
+    ID              reduce using rule 52 (begin_while -> L_PARENTHESIS .)
+    CNT_INT         reduce using rule 52 (begin_while -> L_PARENTHESIS .)
+    CNT_FLOAT       reduce using rule 52 (begin_while -> L_PARENTHESIS .)
+
+
+state 73
+
+    (55) print_stmt -> PRINT L_PARENTHESIS . print_expression_list R_PARENTHESIS SEMI_COLON
+    (56) print_expression_list -> . print_item print_expression_list_prime
+    (57) print_item -> . expression
+    (58) print_item -> . CNT_STRING
+    (19) expression -> . exp expression_prime
+    (8) exp -> . exp PLUS termino
+    (9) exp -> . exp MINUS termino
+    (10) exp -> . termino
+    (11) termino -> . termino ASTERISK factor
+    (12) termino -> . termino FORWARD_SLASH factor
+    (13) termino -> . factor
+    (61) factor -> . L_PARENTHESIS expression R_PARENTHESIS
+    (62) factor -> . PLUS ID
+    (63) factor -> . PLUS cte
+    (64) factor -> . MINUS ID
+    (65) factor -> . MINUS cte
+    (66) factor -> . ID
+    (67) factor -> . cte
+    (17) cte -> . CNT_INT
+    (18) cte -> . CNT_FLOAT
+
+    CNT_STRING      shift and go to state 99
+    L_PARENTHESIS   shift and go to state 88
+    PLUS            shift and go to state 84
+    MINUS           shift and go to state 86
+    ID              shift and go to state 81
+    CNT_INT         shift and go to state 90
+    CNT_FLOAT       shift and go to state 91
+
+    print_expression_list          shift and go to state 96
+    print_item                     shift and go to state 97
+    expression                     shift and go to state 98
+    exp                            shift and go to state 83
+    termino                        shift and go to state 85
+    factor                         shift and go to state 87
+    cte                            shift and go to state 89
 
 state 74
-
-    (63) factor -> cte .
-
-    ASTERISK        reduce using rule 63 (factor -> cte .)
-    FORWARD_SLASH   reduce using rule 63 (factor -> cte .)
-    PLUS            reduce using rule 63 (factor -> cte .)
-    MINUS           reduce using rule 63 (factor -> cte .)
-    GREATER_THAN    reduce using rule 63 (factor -> cte .)
-    LOWER_THAN      reduce using rule 63 (factor -> cte .)
-    NOT_EQUAL       reduce using rule 63 (factor -> cte .)
-    SEMI_COLON      reduce using rule 63 (factor -> cte .)
-    COMMA           reduce using rule 63 (factor -> cte .)
-    R_PARENTHESIS   reduce using rule 63 (factor -> cte .)
-
-
-state 75
-
-    (17) cte -> CNT_INT .
-
-    ASTERISK        reduce using rule 17 (cte -> CNT_INT .)
-    FORWARD_SLASH   reduce using rule 17 (cte -> CNT_INT .)
-    PLUS            reduce using rule 17 (cte -> CNT_INT .)
-    MINUS           reduce using rule 17 (cte -> CNT_INT .)
-    GREATER_THAN    reduce using rule 17 (cte -> CNT_INT .)
-    LOWER_THAN      reduce using rule 17 (cte -> CNT_INT .)
-    NOT_EQUAL       reduce using rule 17 (cte -> CNT_INT .)
-    SEMI_COLON      reduce using rule 17 (cte -> CNT_INT .)
-    COMMA           reduce using rule 17 (cte -> CNT_INT .)
-    R_PARENTHESIS   reduce using rule 17 (cte -> CNT_INT .)
-
-
-state 76
-
-    (18) cte -> CNT_FLOAT .
-
-    ASTERISK        reduce using rule 18 (cte -> CNT_FLOAT .)
-    FORWARD_SLASH   reduce using rule 18 (cte -> CNT_FLOAT .)
-    PLUS            reduce using rule 18 (cte -> CNT_FLOAT .)
-    MINUS           reduce using rule 18 (cte -> CNT_FLOAT .)
-    GREATER_THAN    reduce using rule 18 (cte -> CNT_FLOAT .)
-    LOWER_THAN      reduce using rule 18 (cte -> CNT_FLOAT .)
-    NOT_EQUAL       reduce using rule 18 (cte -> CNT_FLOAT .)
-    SEMI_COLON      reduce using rule 18 (cte -> CNT_FLOAT .)
-    COMMA           reduce using rule 18 (cte -> CNT_FLOAT .)
-    R_PARENTHESIS   reduce using rule 18 (cte -> CNT_FLOAT .)
-
-
-state 77
-
-    (24) f_call -> ID L_PARENTHESIS R_PARENTHESIS . SEMI_COLON
-
-    SEMI_COLON      shift and go to state 106
-
-
-state 78
-
-    (25) f_call -> ID L_PARENTHESIS expression_list . R_PARENTHESIS SEMI_COLON
-
-    R_PARENTHESIS   shift and go to state 107
-
-
-state 79
-
-    (26) expression_list -> expression . expression_list_prime
-    (27) expression_list_prime -> . COMMA expression_list
-    (28) expression_list_prime -> . empty
-    (16) empty -> .
-
-    COMMA           shift and go to state 109
-    R_PARENTHESIS   reduce using rule 16 (empty -> .)
-
-    expression_list_prime          shift and go to state 108
-    empty                          shift and go to state 110
-
-state 80
-
-    (39) condition -> IF begin_if expression . end_if body else_part SEMI_COLON
-    (43) end_if -> . R_PARENTHESIS
-
-    R_PARENTHESIS   shift and go to state 112
-
-    end_if                         shift and go to state 111
-
-state 81
-
-    (47) cycle -> WHILE begin_while while_expression . R_PARENTHESIS DO body end_while SEMI_COLON
-
-    R_PARENTHESIS   shift and go to state 113
-
-
-state 82
-
-    (49) while_expression -> expression .
-
-    R_PARENTHESIS   reduce using rule 49 (while_expression -> expression .)
-
-
-state 83
-
-    (51) print_stmt -> PRINT L_PARENTHESIS print_expression_list . R_PARENTHESIS SEMI_COLON
-
-    R_PARENTHESIS   shift and go to state 114
-
-
-state 84
-
-    (52) print_expression_list -> print_item . print_expression_list_prime
-    (55) print_expression_list_prime -> . COMMA print_expression_list
-    (56) print_expression_list_prime -> . empty
-    (16) empty -> .
-
-    COMMA           shift and go to state 116
-    R_PARENTHESIS   reduce using rule 16 (empty -> .)
-
-    print_expression_list_prime    shift and go to state 115
-    empty                          shift and go to state 117
-
-state 85
-
-    (53) print_item -> expression .
-
-    COMMA           reduce using rule 53 (print_item -> expression .)
-    R_PARENTHESIS   reduce using rule 53 (print_item -> expression .)
-
-
-state 86
-
-    (54) print_item -> CNT_STRING .
-
-    COMMA           reduce using rule 54 (print_item -> CNT_STRING .)
-    R_PARENTHESIS   reduce using rule 54 (print_item -> CNT_STRING .)
-
-
-state 87
 
     (2) var_list -> id_list COLON type SEMI_COLON . var_list_prime
     (3) var_list_prime -> . var_list
@@ -1244,491 +1069,344 @@ state 87
     MAIN            reduce using rule 16 (empty -> .)
     VOID            reduce using rule 16 (empty -> .)
     L_CBRACKET      reduce using rule 16 (empty -> .)
-    ID              shift and go to state 18
+    ID              shift and go to state 20
 
-    id_list                        shift and go to state 17
-    var_list_prime                 shift and go to state 118
-    var_list                       shift and go to state 119
-    empty                          shift and go to state 120
+    id_list                        shift and go to state 19
+    var_list_prime                 shift and go to state 100
+    var_list                       shift and go to state 101
+    empty                          shift and go to state 102
+
+state 75
+
+    (72) param_list -> ID . COLON type param param_list_prime
+
+    COLON           shift and go to state 103
+
+
+state 76
+
+    (68) funcs -> VOID ID func_start L_PARENTHESIS param_list . R_PARENTHESIS L_SBRACKET vars body R_SBRACKET func_end SEMI_COLON
+    (69) funcs -> VOID ID func_start L_PARENTHESIS param_list . R_PARENTHESIS L_SBRACKET body R_SBRACKET func_end SEMI_COLON
+
+    R_PARENTHESIS   shift and go to state 104
+
+
+state 77
+
+    (70) funcs -> VOID ID func_start L_PARENTHESIS R_PARENTHESIS . L_SBRACKET vars body R_SBRACKET func_end SEMI_COLON
+    (71) funcs -> VOID ID func_start L_PARENTHESIS R_PARENTHESIS . L_SBRACKET body R_SBRACKET func_end SEMI_COLON
+
+    L_SBRACKET      shift and go to state 105
+
+
+state 78
+
+    (78) program -> PROGRAM ID SEMI_COLON program_start vars func_list MAIN main_start body program_end . END
+
+    END             shift and go to state 106
+
+
+state 79
+
+    (80) program -> PROGRAM ID SEMI_COLON program_start vars MAIN main_start body program_end END .
+
+    $end            reduce using rule 80 (program -> PROGRAM ID SEMI_COLON program_start vars MAIN main_start body program_end END .)
+
+
+state 80
+
+    (79) program -> PROGRAM ID SEMI_COLON program_start func_list MAIN main_start body program_end END .
+
+    $end            reduce using rule 79 (program -> PROGRAM ID SEMI_COLON program_start func_list MAIN main_start body program_end END .)
+
+
+state 81
+
+    (66) factor -> ID .
+
+    ASTERISK        reduce using rule 66 (factor -> ID .)
+    FORWARD_SLASH   reduce using rule 66 (factor -> ID .)
+    PLUS            reduce using rule 66 (factor -> ID .)
+    MINUS           reduce using rule 66 (factor -> ID .)
+    GREATER_THAN    reduce using rule 66 (factor -> ID .)
+    LOWER_THAN      reduce using rule 66 (factor -> ID .)
+    NOT_EQUAL       reduce using rule 66 (factor -> ID .)
+    SEMI_COLON      reduce using rule 66 (factor -> ID .)
+    R_PARENTHESIS   reduce using rule 66 (factor -> ID .)
+    COMMA           reduce using rule 66 (factor -> ID .)
+
+
+state 82
+
+    (88) assign -> ID EQUAL expression . SEMI_COLON
+
+    SEMI_COLON      shift and go to state 107
+
+
+state 83
+
+    (19) expression -> exp . expression_prime
+    (8) exp -> exp . PLUS termino
+    (9) exp -> exp . MINUS termino
+    (20) expression_prime -> . GREATER_THAN exp
+    (21) expression_prime -> . LOWER_THAN exp
+    (22) expression_prime -> . NOT_EQUAL exp
+    (23) expression_prime -> . empty
+    (16) empty -> .
+
+    PLUS            shift and go to state 109
+    MINUS           shift and go to state 110
+    GREATER_THAN    shift and go to state 111
+    LOWER_THAN      shift and go to state 112
+    NOT_EQUAL       shift and go to state 113
+    SEMI_COLON      reduce using rule 16 (empty -> .)
+    R_PARENTHESIS   reduce using rule 16 (empty -> .)
+    COMMA           reduce using rule 16 (empty -> .)
+
+    expression_prime               shift and go to state 108
+    empty                          shift and go to state 114
+
+state 84
+
+    (62) factor -> PLUS . ID
+    (63) factor -> PLUS . cte
+    (17) cte -> . CNT_INT
+    (18) cte -> . CNT_FLOAT
+
+    ID              shift and go to state 115
+    CNT_INT         shift and go to state 90
+    CNT_FLOAT       shift and go to state 91
+
+    cte                            shift and go to state 116
+
+state 85
+
+    (10) exp -> termino .
+    (11) termino -> termino . ASTERISK factor
+    (12) termino -> termino . FORWARD_SLASH factor
+
+    PLUS            reduce using rule 10 (exp -> termino .)
+    MINUS           reduce using rule 10 (exp -> termino .)
+    GREATER_THAN    reduce using rule 10 (exp -> termino .)
+    LOWER_THAN      reduce using rule 10 (exp -> termino .)
+    NOT_EQUAL       reduce using rule 10 (exp -> termino .)
+    SEMI_COLON      reduce using rule 10 (exp -> termino .)
+    R_PARENTHESIS   reduce using rule 10 (exp -> termino .)
+    COMMA           reduce using rule 10 (exp -> termino .)
+    ASTERISK        shift and go to state 117
+    FORWARD_SLASH   shift and go to state 118
+
+
+state 86
+
+    (64) factor -> MINUS . ID
+    (65) factor -> MINUS . cte
+    (17) cte -> . CNT_INT
+    (18) cte -> . CNT_FLOAT
+
+    ID              shift and go to state 119
+    CNT_INT         shift and go to state 90
+    CNT_FLOAT       shift and go to state 91
+
+    cte                            shift and go to state 120
+
+state 87
+
+    (13) termino -> factor .
+
+    ASTERISK        reduce using rule 13 (termino -> factor .)
+    FORWARD_SLASH   reduce using rule 13 (termino -> factor .)
+    PLUS            reduce using rule 13 (termino -> factor .)
+    MINUS           reduce using rule 13 (termino -> factor .)
+    GREATER_THAN    reduce using rule 13 (termino -> factor .)
+    LOWER_THAN      reduce using rule 13 (termino -> factor .)
+    NOT_EQUAL       reduce using rule 13 (termino -> factor .)
+    SEMI_COLON      reduce using rule 13 (termino -> factor .)
+    R_PARENTHESIS   reduce using rule 13 (termino -> factor .)
+    COMMA           reduce using rule 13 (termino -> factor .)
+
 
 state 88
 
-    (68) param_list -> ID COLON . type param_list_prime
-    (14) type -> . INT
-    (15) type -> . FLOAT
+    (61) factor -> L_PARENTHESIS . expression R_PARENTHESIS
+    (19) expression -> . exp expression_prime
+    (8) exp -> . exp PLUS termino
+    (9) exp -> . exp MINUS termino
+    (10) exp -> . termino
+    (11) termino -> . termino ASTERISK factor
+    (12) termino -> . termino FORWARD_SLASH factor
+    (13) termino -> . factor
+    (61) factor -> . L_PARENTHESIS expression R_PARENTHESIS
+    (62) factor -> . PLUS ID
+    (63) factor -> . PLUS cte
+    (64) factor -> . MINUS ID
+    (65) factor -> . MINUS cte
+    (66) factor -> . ID
+    (67) factor -> . cte
+    (17) cte -> . CNT_INT
+    (18) cte -> . CNT_FLOAT
 
-    INT             shift and go to state 59
-    FLOAT           shift and go to state 60
+    L_PARENTHESIS   shift and go to state 88
+    PLUS            shift and go to state 84
+    MINUS           shift and go to state 86
+    ID              shift and go to state 81
+    CNT_INT         shift and go to state 90
+    CNT_FLOAT       shift and go to state 91
 
-    type                           shift and go to state 121
+    expression                     shift and go to state 121
+    exp                            shift and go to state 83
+    termino                        shift and go to state 85
+    factor                         shift and go to state 87
+    cte                            shift and go to state 89
 
 state 89
 
-    (64) funcs -> VOID ID L_PARENTHESIS param_list R_PARENTHESIS . L_SBRACKET vars body R_SBRACKET SEMI_COLON
-    (65) funcs -> VOID ID L_PARENTHESIS param_list R_PARENTHESIS . L_SBRACKET body R_SBRACKET SEMI_COLON
+    (67) factor -> cte .
 
-    L_SBRACKET      shift and go to state 122
+    ASTERISK        reduce using rule 67 (factor -> cte .)
+    FORWARD_SLASH   reduce using rule 67 (factor -> cte .)
+    PLUS            reduce using rule 67 (factor -> cte .)
+    MINUS           reduce using rule 67 (factor -> cte .)
+    GREATER_THAN    reduce using rule 67 (factor -> cte .)
+    LOWER_THAN      reduce using rule 67 (factor -> cte .)
+    NOT_EQUAL       reduce using rule 67 (factor -> cte .)
+    SEMI_COLON      reduce using rule 67 (factor -> cte .)
+    R_PARENTHESIS   reduce using rule 67 (factor -> cte .)
+    COMMA           reduce using rule 67 (factor -> cte .)
 
 
 state 90
 
-    (66) funcs -> VOID ID L_PARENTHESIS R_PARENTHESIS L_SBRACKET . vars body R_SBRACKET SEMI_COLON
-    (67) funcs -> VOID ID L_PARENTHESIS R_PARENTHESIS L_SBRACKET . body R_SBRACKET SEMI_COLON
-    (1) vars -> . VAR var_list
-    (29) body -> . L_CBRACKET R_CBRACKET
-    (30) body -> . L_CBRACKET statement_list R_CBRACKET
+    (17) cte -> CNT_INT .
 
-    VAR             shift and go to state 8
-    L_CBRACKET      shift and go to state 15
+    ASTERISK        reduce using rule 17 (cte -> CNT_INT .)
+    FORWARD_SLASH   reduce using rule 17 (cte -> CNT_INT .)
+    PLUS            reduce using rule 17 (cte -> CNT_INT .)
+    MINUS           reduce using rule 17 (cte -> CNT_INT .)
+    GREATER_THAN    reduce using rule 17 (cte -> CNT_INT .)
+    LOWER_THAN      reduce using rule 17 (cte -> CNT_INT .)
+    NOT_EQUAL       reduce using rule 17 (cte -> CNT_INT .)
+    SEMI_COLON      reduce using rule 17 (cte -> CNT_INT .)
+    R_PARENTHESIS   reduce using rule 17 (cte -> CNT_INT .)
+    COMMA           reduce using rule 17 (cte -> CNT_INT .)
 
-    vars                           shift and go to state 123
-    body                           shift and go to state 124
 
 state 91
 
-    (78) assign -> ID EQUAL expression SEMI_COLON .
+    (18) cte -> CNT_FLOAT .
 
-    ID              reduce using rule 78 (assign -> ID EQUAL expression SEMI_COLON .)
-    IF              reduce using rule 78 (assign -> ID EQUAL expression SEMI_COLON .)
-    WHILE           reduce using rule 78 (assign -> ID EQUAL expression SEMI_COLON .)
-    PRINT           reduce using rule 78 (assign -> ID EQUAL expression SEMI_COLON .)
-    R_CBRACKET      reduce using rule 78 (assign -> ID EQUAL expression SEMI_COLON .)
+    ASTERISK        reduce using rule 18 (cte -> CNT_FLOAT .)
+    FORWARD_SLASH   reduce using rule 18 (cte -> CNT_FLOAT .)
+    PLUS            reduce using rule 18 (cte -> CNT_FLOAT .)
+    MINUS           reduce using rule 18 (cte -> CNT_FLOAT .)
+    GREATER_THAN    reduce using rule 18 (cte -> CNT_FLOAT .)
+    LOWER_THAN      reduce using rule 18 (cte -> CNT_FLOAT .)
+    NOT_EQUAL       reduce using rule 18 (cte -> CNT_FLOAT .)
+    SEMI_COLON      reduce using rule 18 (cte -> CNT_FLOAT .)
+    R_PARENTHESIS   reduce using rule 18 (cte -> CNT_FLOAT .)
+    COMMA           reduce using rule 18 (cte -> CNT_FLOAT .)
 
 
 state 92
 
-    (19) expression -> exp expression_prime .
+    (24) f_call -> ID era L_PARENTHESIS . R_PARENTHESIS gosub SEMI_COLON
+    (25) f_call -> ID era L_PARENTHESIS . expression_list R_PARENTHESIS gosub SEMI_COLON
+    (26) expression_list -> . expression expression_list_prime
+    (27) expression_list -> . f_call_arg expression_list_prime
+    (19) expression -> . exp expression_prime
+    (32) f_call_arg -> . expression
+    (8) exp -> . exp PLUS termino
+    (9) exp -> . exp MINUS termino
+    (10) exp -> . termino
+    (11) termino -> . termino ASTERISK factor
+    (12) termino -> . termino FORWARD_SLASH factor
+    (13) termino -> . factor
+    (61) factor -> . L_PARENTHESIS expression R_PARENTHESIS
+    (62) factor -> . PLUS ID
+    (63) factor -> . PLUS cte
+    (64) factor -> . MINUS ID
+    (65) factor -> . MINUS cte
+    (66) factor -> . ID
+    (67) factor -> . cte
+    (17) cte -> . CNT_INT
+    (18) cte -> . CNT_FLOAT
 
-    SEMI_COLON      reduce using rule 19 (expression -> exp expression_prime .)
-    COMMA           reduce using rule 19 (expression -> exp expression_prime .)
-    R_PARENTHESIS   reduce using rule 19 (expression -> exp expression_prime .)
+    R_PARENTHESIS   shift and go to state 122
+    L_PARENTHESIS   shift and go to state 88
+    PLUS            shift and go to state 84
+    MINUS           shift and go to state 86
+    ID              shift and go to state 81
+    CNT_INT         shift and go to state 90
+    CNT_FLOAT       shift and go to state 91
 
+    expression_list                shift and go to state 123
+    expression                     shift and go to state 124
+    f_call_arg                     shift and go to state 125
+    exp                            shift and go to state 83
+    termino                        shift and go to state 85
+    factor                         shift and go to state 87
+    cte                            shift and go to state 89
 
 state 93
 
-    (8) exp -> exp PLUS . termino
-    (11) termino -> . termino ASTERISK factor
-    (12) termino -> . termino FORWARD_SLASH factor
-    (13) termino -> . factor
-    (57) factor -> . L_PARENTHESIS expression R_PARENTHESIS
-    (58) factor -> . PLUS ID
-    (59) factor -> . PLUS cte
-    (60) factor -> . MINUS ID
-    (61) factor -> . MINUS cte
-    (62) factor -> . ID
-    (63) factor -> . cte
-    (17) cte -> . CNT_INT
-    (18) cte -> . CNT_FLOAT
+    (43) condition -> IF begin_if expression . end_if body else_part SEMI_COLON
+    (47) end_if -> . R_PARENTHESIS
 
-    L_PARENTHESIS   shift and go to state 73
-    PLUS            shift and go to state 69
-    MINUS           shift and go to state 71
-    ID              shift and go to state 66
-    CNT_INT         shift and go to state 75
-    CNT_FLOAT       shift and go to state 76
+    R_PARENTHESIS   shift and go to state 127
 
-    termino                        shift and go to state 125
-    factor                         shift and go to state 72
-    cte                            shift and go to state 74
+    end_if                         shift and go to state 126
 
 state 94
 
-    (9) exp -> exp MINUS . termino
-    (11) termino -> . termino ASTERISK factor
-    (12) termino -> . termino FORWARD_SLASH factor
-    (13) termino -> . factor
-    (57) factor -> . L_PARENTHESIS expression R_PARENTHESIS
-    (58) factor -> . PLUS ID
-    (59) factor -> . PLUS cte
-    (60) factor -> . MINUS ID
-    (61) factor -> . MINUS cte
-    (62) factor -> . ID
-    (63) factor -> . cte
-    (17) cte -> . CNT_INT
-    (18) cte -> . CNT_FLOAT
+    (51) cycle -> WHILE begin_while while_expression . R_PARENTHESIS DO body end_while SEMI_COLON
 
-    L_PARENTHESIS   shift and go to state 73
-    PLUS            shift and go to state 69
-    MINUS           shift and go to state 71
-    ID              shift and go to state 66
-    CNT_INT         shift and go to state 75
-    CNT_FLOAT       shift and go to state 76
+    R_PARENTHESIS   shift and go to state 128
 
-    termino                        shift and go to state 126
-    factor                         shift and go to state 72
-    cte                            shift and go to state 74
 
 state 95
 
-    (20) expression_prime -> GREATER_THAN . exp
-    (8) exp -> . exp PLUS termino
-    (9) exp -> . exp MINUS termino
-    (10) exp -> . termino
-    (11) termino -> . termino ASTERISK factor
-    (12) termino -> . termino FORWARD_SLASH factor
-    (13) termino -> . factor
-    (57) factor -> . L_PARENTHESIS expression R_PARENTHESIS
-    (58) factor -> . PLUS ID
-    (59) factor -> . PLUS cte
-    (60) factor -> . MINUS ID
-    (61) factor -> . MINUS cte
-    (62) factor -> . ID
-    (63) factor -> . cte
-    (17) cte -> . CNT_INT
-    (18) cte -> . CNT_FLOAT
+    (53) while_expression -> expression .
 
-    L_PARENTHESIS   shift and go to state 73
-    PLUS            shift and go to state 69
-    MINUS           shift and go to state 71
-    ID              shift and go to state 66
-    CNT_INT         shift and go to state 75
-    CNT_FLOAT       shift and go to state 76
+    R_PARENTHESIS   reduce using rule 53 (while_expression -> expression .)
 
-    exp                            shift and go to state 127
-    termino                        shift and go to state 70
-    factor                         shift and go to state 72
-    cte                            shift and go to state 74
 
 state 96
 
-    (21) expression_prime -> LOWER_THAN . exp
-    (8) exp -> . exp PLUS termino
-    (9) exp -> . exp MINUS termino
-    (10) exp -> . termino
-    (11) termino -> . termino ASTERISK factor
-    (12) termino -> . termino FORWARD_SLASH factor
-    (13) termino -> . factor
-    (57) factor -> . L_PARENTHESIS expression R_PARENTHESIS
-    (58) factor -> . PLUS ID
-    (59) factor -> . PLUS cte
-    (60) factor -> . MINUS ID
-    (61) factor -> . MINUS cte
-    (62) factor -> . ID
-    (63) factor -> . cte
-    (17) cte -> . CNT_INT
-    (18) cte -> . CNT_FLOAT
+    (55) print_stmt -> PRINT L_PARENTHESIS print_expression_list . R_PARENTHESIS SEMI_COLON
 
-    L_PARENTHESIS   shift and go to state 73
-    PLUS            shift and go to state 69
-    MINUS           shift and go to state 71
-    ID              shift and go to state 66
-    CNT_INT         shift and go to state 75
-    CNT_FLOAT       shift and go to state 76
+    R_PARENTHESIS   shift and go to state 129
 
-    exp                            shift and go to state 128
-    termino                        shift and go to state 70
-    factor                         shift and go to state 72
-    cte                            shift and go to state 74
 
 state 97
 
-    (22) expression_prime -> NOT_EQUAL . exp
-    (8) exp -> . exp PLUS termino
-    (9) exp -> . exp MINUS termino
-    (10) exp -> . termino
-    (11) termino -> . termino ASTERISK factor
-    (12) termino -> . termino FORWARD_SLASH factor
-    (13) termino -> . factor
-    (57) factor -> . L_PARENTHESIS expression R_PARENTHESIS
-    (58) factor -> . PLUS ID
-    (59) factor -> . PLUS cte
-    (60) factor -> . MINUS ID
-    (61) factor -> . MINUS cte
-    (62) factor -> . ID
-    (63) factor -> . cte
-    (17) cte -> . CNT_INT
-    (18) cte -> . CNT_FLOAT
+    (56) print_expression_list -> print_item . print_expression_list_prime
+    (59) print_expression_list_prime -> . COMMA print_expression_list
+    (60) print_expression_list_prime -> . empty
+    (16) empty -> .
 
-    L_PARENTHESIS   shift and go to state 73
-    PLUS            shift and go to state 69
-    MINUS           shift and go to state 71
-    ID              shift and go to state 66
-    CNT_INT         shift and go to state 75
-    CNT_FLOAT       shift and go to state 76
+    COMMA           shift and go to state 131
+    R_PARENTHESIS   reduce using rule 16 (empty -> .)
 
-    exp                            shift and go to state 129
-    termino                        shift and go to state 70
-    factor                         shift and go to state 72
-    cte                            shift and go to state 74
+    print_expression_list_prime    shift and go to state 130
+    empty                          shift and go to state 132
 
 state 98
 
-    (23) expression_prime -> empty .
+    (57) print_item -> expression .
 
-    SEMI_COLON      reduce using rule 23 (expression_prime -> empty .)
-    COMMA           reduce using rule 23 (expression_prime -> empty .)
-    R_PARENTHESIS   reduce using rule 23 (expression_prime -> empty .)
+    COMMA           reduce using rule 57 (print_item -> expression .)
+    R_PARENTHESIS   reduce using rule 57 (print_item -> expression .)
 
 
 state 99
 
-    (58) factor -> PLUS ID .
+    (58) print_item -> CNT_STRING .
 
-    ASTERISK        reduce using rule 58 (factor -> PLUS ID .)
-    FORWARD_SLASH   reduce using rule 58 (factor -> PLUS ID .)
-    PLUS            reduce using rule 58 (factor -> PLUS ID .)
-    MINUS           reduce using rule 58 (factor -> PLUS ID .)
-    GREATER_THAN    reduce using rule 58 (factor -> PLUS ID .)
-    LOWER_THAN      reduce using rule 58 (factor -> PLUS ID .)
-    NOT_EQUAL       reduce using rule 58 (factor -> PLUS ID .)
-    SEMI_COLON      reduce using rule 58 (factor -> PLUS ID .)
-    COMMA           reduce using rule 58 (factor -> PLUS ID .)
-    R_PARENTHESIS   reduce using rule 58 (factor -> PLUS ID .)
+    COMMA           reduce using rule 58 (print_item -> CNT_STRING .)
+    R_PARENTHESIS   reduce using rule 58 (print_item -> CNT_STRING .)
 
 
 state 100
-
-    (59) factor -> PLUS cte .
-
-    ASTERISK        reduce using rule 59 (factor -> PLUS cte .)
-    FORWARD_SLASH   reduce using rule 59 (factor -> PLUS cte .)
-    PLUS            reduce using rule 59 (factor -> PLUS cte .)
-    MINUS           reduce using rule 59 (factor -> PLUS cte .)
-    GREATER_THAN    reduce using rule 59 (factor -> PLUS cte .)
-    LOWER_THAN      reduce using rule 59 (factor -> PLUS cte .)
-    NOT_EQUAL       reduce using rule 59 (factor -> PLUS cte .)
-    SEMI_COLON      reduce using rule 59 (factor -> PLUS cte .)
-    COMMA           reduce using rule 59 (factor -> PLUS cte .)
-    R_PARENTHESIS   reduce using rule 59 (factor -> PLUS cte .)
-
-
-state 101
-
-    (11) termino -> termino ASTERISK . factor
-    (57) factor -> . L_PARENTHESIS expression R_PARENTHESIS
-    (58) factor -> . PLUS ID
-    (59) factor -> . PLUS cte
-    (60) factor -> . MINUS ID
-    (61) factor -> . MINUS cte
-    (62) factor -> . ID
-    (63) factor -> . cte
-    (17) cte -> . CNT_INT
-    (18) cte -> . CNT_FLOAT
-
-    L_PARENTHESIS   shift and go to state 73
-    PLUS            shift and go to state 69
-    MINUS           shift and go to state 71
-    ID              shift and go to state 66
-    CNT_INT         shift and go to state 75
-    CNT_FLOAT       shift and go to state 76
-
-    factor                         shift and go to state 130
-    cte                            shift and go to state 74
-
-state 102
-
-    (12) termino -> termino FORWARD_SLASH . factor
-    (57) factor -> . L_PARENTHESIS expression R_PARENTHESIS
-    (58) factor -> . PLUS ID
-    (59) factor -> . PLUS cte
-    (60) factor -> . MINUS ID
-    (61) factor -> . MINUS cte
-    (62) factor -> . ID
-    (63) factor -> . cte
-    (17) cte -> . CNT_INT
-    (18) cte -> . CNT_FLOAT
-
-    L_PARENTHESIS   shift and go to state 73
-    PLUS            shift and go to state 69
-    MINUS           shift and go to state 71
-    ID              shift and go to state 66
-    CNT_INT         shift and go to state 75
-    CNT_FLOAT       shift and go to state 76
-
-    factor                         shift and go to state 131
-    cte                            shift and go to state 74
-
-state 103
-
-    (60) factor -> MINUS ID .
-
-    ASTERISK        reduce using rule 60 (factor -> MINUS ID .)
-    FORWARD_SLASH   reduce using rule 60 (factor -> MINUS ID .)
-    PLUS            reduce using rule 60 (factor -> MINUS ID .)
-    MINUS           reduce using rule 60 (factor -> MINUS ID .)
-    GREATER_THAN    reduce using rule 60 (factor -> MINUS ID .)
-    LOWER_THAN      reduce using rule 60 (factor -> MINUS ID .)
-    NOT_EQUAL       reduce using rule 60 (factor -> MINUS ID .)
-    SEMI_COLON      reduce using rule 60 (factor -> MINUS ID .)
-    COMMA           reduce using rule 60 (factor -> MINUS ID .)
-    R_PARENTHESIS   reduce using rule 60 (factor -> MINUS ID .)
-
-
-state 104
-
-    (61) factor -> MINUS cte .
-
-    ASTERISK        reduce using rule 61 (factor -> MINUS cte .)
-    FORWARD_SLASH   reduce using rule 61 (factor -> MINUS cte .)
-    PLUS            reduce using rule 61 (factor -> MINUS cte .)
-    MINUS           reduce using rule 61 (factor -> MINUS cte .)
-    GREATER_THAN    reduce using rule 61 (factor -> MINUS cte .)
-    LOWER_THAN      reduce using rule 61 (factor -> MINUS cte .)
-    NOT_EQUAL       reduce using rule 61 (factor -> MINUS cte .)
-    SEMI_COLON      reduce using rule 61 (factor -> MINUS cte .)
-    COMMA           reduce using rule 61 (factor -> MINUS cte .)
-    R_PARENTHESIS   reduce using rule 61 (factor -> MINUS cte .)
-
-
-state 105
-
-    (57) factor -> L_PARENTHESIS expression . R_PARENTHESIS
-
-    R_PARENTHESIS   shift and go to state 132
-
-
-state 106
-
-    (24) f_call -> ID L_PARENTHESIS R_PARENTHESIS SEMI_COLON .
-
-    ID              reduce using rule 24 (f_call -> ID L_PARENTHESIS R_PARENTHESIS SEMI_COLON .)
-    IF              reduce using rule 24 (f_call -> ID L_PARENTHESIS R_PARENTHESIS SEMI_COLON .)
-    WHILE           reduce using rule 24 (f_call -> ID L_PARENTHESIS R_PARENTHESIS SEMI_COLON .)
-    PRINT           reduce using rule 24 (f_call -> ID L_PARENTHESIS R_PARENTHESIS SEMI_COLON .)
-    R_CBRACKET      reduce using rule 24 (f_call -> ID L_PARENTHESIS R_PARENTHESIS SEMI_COLON .)
-
-
-state 107
-
-    (25) f_call -> ID L_PARENTHESIS expression_list R_PARENTHESIS . SEMI_COLON
-
-    SEMI_COLON      shift and go to state 133
-
-
-state 108
-
-    (26) expression_list -> expression expression_list_prime .
-
-    R_PARENTHESIS   reduce using rule 26 (expression_list -> expression expression_list_prime .)
-
-
-state 109
-
-    (27) expression_list_prime -> COMMA . expression_list
-    (26) expression_list -> . expression expression_list_prime
-    (19) expression -> . exp expression_prime
-    (8) exp -> . exp PLUS termino
-    (9) exp -> . exp MINUS termino
-    (10) exp -> . termino
-    (11) termino -> . termino ASTERISK factor
-    (12) termino -> . termino FORWARD_SLASH factor
-    (13) termino -> . factor
-    (57) factor -> . L_PARENTHESIS expression R_PARENTHESIS
-    (58) factor -> . PLUS ID
-    (59) factor -> . PLUS cte
-    (60) factor -> . MINUS ID
-    (61) factor -> . MINUS cte
-    (62) factor -> . ID
-    (63) factor -> . cte
-    (17) cte -> . CNT_INT
-    (18) cte -> . CNT_FLOAT
-
-    L_PARENTHESIS   shift and go to state 73
-    PLUS            shift and go to state 69
-    MINUS           shift and go to state 71
-    ID              shift and go to state 66
-    CNT_INT         shift and go to state 75
-    CNT_FLOAT       shift and go to state 76
-
-    expression_list                shift and go to state 134
-    expression                     shift and go to state 79
-    exp                            shift and go to state 68
-    termino                        shift and go to state 70
-    factor                         shift and go to state 72
-    cte                            shift and go to state 74
-
-state 110
-
-    (28) expression_list_prime -> empty .
-
-    R_PARENTHESIS   reduce using rule 28 (expression_list_prime -> empty .)
-
-
-state 111
-
-    (39) condition -> IF begin_if expression end_if . body else_part SEMI_COLON
-    (29) body -> . L_CBRACKET R_CBRACKET
-    (30) body -> . L_CBRACKET statement_list R_CBRACKET
-
-    L_CBRACKET      shift and go to state 15
-
-    body                           shift and go to state 135
-
-state 112
-
-    (43) end_if -> R_PARENTHESIS .
-
-    L_CBRACKET      reduce using rule 43 (end_if -> R_PARENTHESIS .)
-
-
-state 113
-
-    (47) cycle -> WHILE begin_while while_expression R_PARENTHESIS . DO body end_while SEMI_COLON
-
-    DO              shift and go to state 136
-
-
-state 114
-
-    (51) print_stmt -> PRINT L_PARENTHESIS print_expression_list R_PARENTHESIS . SEMI_COLON
-
-    SEMI_COLON      shift and go to state 137
-
-
-state 115
-
-    (52) print_expression_list -> print_item print_expression_list_prime .
-
-    R_PARENTHESIS   reduce using rule 52 (print_expression_list -> print_item print_expression_list_prime .)
-
-
-state 116
-
-    (55) print_expression_list_prime -> COMMA . print_expression_list
-    (52) print_expression_list -> . print_item print_expression_list_prime
-    (53) print_item -> . expression
-    (54) print_item -> . CNT_STRING
-    (19) expression -> . exp expression_prime
-    (8) exp -> . exp PLUS termino
-    (9) exp -> . exp MINUS termino
-    (10) exp -> . termino
-    (11) termino -> . termino ASTERISK factor
-    (12) termino -> . termino FORWARD_SLASH factor
-    (13) termino -> . factor
-    (57) factor -> . L_PARENTHESIS expression R_PARENTHESIS
-    (58) factor -> . PLUS ID
-    (59) factor -> . PLUS cte
-    (60) factor -> . MINUS ID
-    (61) factor -> . MINUS cte
-    (62) factor -> . ID
-    (63) factor -> . cte
-    (17) cte -> . CNT_INT
-    (18) cte -> . CNT_FLOAT
-
-    CNT_STRING      shift and go to state 86
-    L_PARENTHESIS   shift and go to state 73
-    PLUS            shift and go to state 69
-    MINUS           shift and go to state 71
-    ID              shift and go to state 66
-    CNT_INT         shift and go to state 75
-    CNT_FLOAT       shift and go to state 76
-
-    print_expression_list          shift and go to state 138
-    print_item                     shift and go to state 84
-    expression                     shift and go to state 85
-    exp                            shift and go to state 68
-    termino                        shift and go to state 70
-    factor                         shift and go to state 72
-    cte                            shift and go to state 74
-
-state 117
-
-    (56) print_expression_list_prime -> empty .
-
-    R_PARENTHESIS   reduce using rule 56 (print_expression_list_prime -> empty .)
-
-
-state 118
 
     (2) var_list -> id_list COLON type SEMI_COLON var_list_prime .
 
@@ -1737,7 +1415,7 @@ state 118
     L_CBRACKET      reduce using rule 2 (var_list -> id_list COLON type SEMI_COLON var_list_prime .)
 
 
-state 119
+state 101
 
     (3) var_list_prime -> var_list .
 
@@ -1746,7 +1424,7 @@ state 119
     L_CBRACKET      reduce using rule 3 (var_list_prime -> var_list .)
 
 
-state 120
+state 102
 
     (4) var_list_prime -> empty .
 
@@ -1755,51 +1433,517 @@ state 120
     L_CBRACKET      reduce using rule 4 (var_list_prime -> empty .)
 
 
+state 103
+
+    (72) param_list -> ID COLON . type param param_list_prime
+    (14) type -> . INT
+    (15) type -> . FLOAT
+
+    INT             shift and go to state 54
+    FLOAT           shift and go to state 55
+
+    type                           shift and go to state 133
+
+state 104
+
+    (68) funcs -> VOID ID func_start L_PARENTHESIS param_list R_PARENTHESIS . L_SBRACKET vars body R_SBRACKET func_end SEMI_COLON
+    (69) funcs -> VOID ID func_start L_PARENTHESIS param_list R_PARENTHESIS . L_SBRACKET body R_SBRACKET func_end SEMI_COLON
+
+    L_SBRACKET      shift and go to state 134
+
+
+state 105
+
+    (70) funcs -> VOID ID func_start L_PARENTHESIS R_PARENTHESIS L_SBRACKET . vars body R_SBRACKET func_end SEMI_COLON
+    (71) funcs -> VOID ID func_start L_PARENTHESIS R_PARENTHESIS L_SBRACKET . body R_SBRACKET func_end SEMI_COLON
+    (1) vars -> . VAR var_list
+    (33) body -> . L_CBRACKET R_CBRACKET
+    (34) body -> . L_CBRACKET statement_list R_CBRACKET
+
+    VAR             shift and go to state 10
+    L_CBRACKET      shift and go to state 29
+
+    vars                           shift and go to state 135
+    body                           shift and go to state 136
+
+state 106
+
+    (78) program -> PROGRAM ID SEMI_COLON program_start vars func_list MAIN main_start body program_end END .
+
+    $end            reduce using rule 78 (program -> PROGRAM ID SEMI_COLON program_start vars func_list MAIN main_start body program_end END .)
+
+
+state 107
+
+    (88) assign -> ID EQUAL expression SEMI_COLON .
+
+    ID              reduce using rule 88 (assign -> ID EQUAL expression SEMI_COLON .)
+    IF              reduce using rule 88 (assign -> ID EQUAL expression SEMI_COLON .)
+    WHILE           reduce using rule 88 (assign -> ID EQUAL expression SEMI_COLON .)
+    PRINT           reduce using rule 88 (assign -> ID EQUAL expression SEMI_COLON .)
+    R_CBRACKET      reduce using rule 88 (assign -> ID EQUAL expression SEMI_COLON .)
+
+
+state 108
+
+    (19) expression -> exp expression_prime .
+
+    SEMI_COLON      reduce using rule 19 (expression -> exp expression_prime .)
+    R_PARENTHESIS   reduce using rule 19 (expression -> exp expression_prime .)
+    COMMA           reduce using rule 19 (expression -> exp expression_prime .)
+
+
+state 109
+
+    (8) exp -> exp PLUS . termino
+    (11) termino -> . termino ASTERISK factor
+    (12) termino -> . termino FORWARD_SLASH factor
+    (13) termino -> . factor
+    (61) factor -> . L_PARENTHESIS expression R_PARENTHESIS
+    (62) factor -> . PLUS ID
+    (63) factor -> . PLUS cte
+    (64) factor -> . MINUS ID
+    (65) factor -> . MINUS cte
+    (66) factor -> . ID
+    (67) factor -> . cte
+    (17) cte -> . CNT_INT
+    (18) cte -> . CNT_FLOAT
+
+    L_PARENTHESIS   shift and go to state 88
+    PLUS            shift and go to state 84
+    MINUS           shift and go to state 86
+    ID              shift and go to state 81
+    CNT_INT         shift and go to state 90
+    CNT_FLOAT       shift and go to state 91
+
+    termino                        shift and go to state 137
+    factor                         shift and go to state 87
+    cte                            shift and go to state 89
+
+state 110
+
+    (9) exp -> exp MINUS . termino
+    (11) termino -> . termino ASTERISK factor
+    (12) termino -> . termino FORWARD_SLASH factor
+    (13) termino -> . factor
+    (61) factor -> . L_PARENTHESIS expression R_PARENTHESIS
+    (62) factor -> . PLUS ID
+    (63) factor -> . PLUS cte
+    (64) factor -> . MINUS ID
+    (65) factor -> . MINUS cte
+    (66) factor -> . ID
+    (67) factor -> . cte
+    (17) cte -> . CNT_INT
+    (18) cte -> . CNT_FLOAT
+
+    L_PARENTHESIS   shift and go to state 88
+    PLUS            shift and go to state 84
+    MINUS           shift and go to state 86
+    ID              shift and go to state 81
+    CNT_INT         shift and go to state 90
+    CNT_FLOAT       shift and go to state 91
+
+    termino                        shift and go to state 138
+    factor                         shift and go to state 87
+    cte                            shift and go to state 89
+
+state 111
+
+    (20) expression_prime -> GREATER_THAN . exp
+    (8) exp -> . exp PLUS termino
+    (9) exp -> . exp MINUS termino
+    (10) exp -> . termino
+    (11) termino -> . termino ASTERISK factor
+    (12) termino -> . termino FORWARD_SLASH factor
+    (13) termino -> . factor
+    (61) factor -> . L_PARENTHESIS expression R_PARENTHESIS
+    (62) factor -> . PLUS ID
+    (63) factor -> . PLUS cte
+    (64) factor -> . MINUS ID
+    (65) factor -> . MINUS cte
+    (66) factor -> . ID
+    (67) factor -> . cte
+    (17) cte -> . CNT_INT
+    (18) cte -> . CNT_FLOAT
+
+    L_PARENTHESIS   shift and go to state 88
+    PLUS            shift and go to state 84
+    MINUS           shift and go to state 86
+    ID              shift and go to state 81
+    CNT_INT         shift and go to state 90
+    CNT_FLOAT       shift and go to state 91
+
+    exp                            shift and go to state 139
+    termino                        shift and go to state 85
+    factor                         shift and go to state 87
+    cte                            shift and go to state 89
+
+state 112
+
+    (21) expression_prime -> LOWER_THAN . exp
+    (8) exp -> . exp PLUS termino
+    (9) exp -> . exp MINUS termino
+    (10) exp -> . termino
+    (11) termino -> . termino ASTERISK factor
+    (12) termino -> . termino FORWARD_SLASH factor
+    (13) termino -> . factor
+    (61) factor -> . L_PARENTHESIS expression R_PARENTHESIS
+    (62) factor -> . PLUS ID
+    (63) factor -> . PLUS cte
+    (64) factor -> . MINUS ID
+    (65) factor -> . MINUS cte
+    (66) factor -> . ID
+    (67) factor -> . cte
+    (17) cte -> . CNT_INT
+    (18) cte -> . CNT_FLOAT
+
+    L_PARENTHESIS   shift and go to state 88
+    PLUS            shift and go to state 84
+    MINUS           shift and go to state 86
+    ID              shift and go to state 81
+    CNT_INT         shift and go to state 90
+    CNT_FLOAT       shift and go to state 91
+
+    exp                            shift and go to state 140
+    termino                        shift and go to state 85
+    factor                         shift and go to state 87
+    cte                            shift and go to state 89
+
+state 113
+
+    (22) expression_prime -> NOT_EQUAL . exp
+    (8) exp -> . exp PLUS termino
+    (9) exp -> . exp MINUS termino
+    (10) exp -> . termino
+    (11) termino -> . termino ASTERISK factor
+    (12) termino -> . termino FORWARD_SLASH factor
+    (13) termino -> . factor
+    (61) factor -> . L_PARENTHESIS expression R_PARENTHESIS
+    (62) factor -> . PLUS ID
+    (63) factor -> . PLUS cte
+    (64) factor -> . MINUS ID
+    (65) factor -> . MINUS cte
+    (66) factor -> . ID
+    (67) factor -> . cte
+    (17) cte -> . CNT_INT
+    (18) cte -> . CNT_FLOAT
+
+    L_PARENTHESIS   shift and go to state 88
+    PLUS            shift and go to state 84
+    MINUS           shift and go to state 86
+    ID              shift and go to state 81
+    CNT_INT         shift and go to state 90
+    CNT_FLOAT       shift and go to state 91
+
+    exp                            shift and go to state 141
+    termino                        shift and go to state 85
+    factor                         shift and go to state 87
+    cte                            shift and go to state 89
+
+state 114
+
+    (23) expression_prime -> empty .
+
+    SEMI_COLON      reduce using rule 23 (expression_prime -> empty .)
+    R_PARENTHESIS   reduce using rule 23 (expression_prime -> empty .)
+    COMMA           reduce using rule 23 (expression_prime -> empty .)
+
+
+state 115
+
+    (62) factor -> PLUS ID .
+
+    ASTERISK        reduce using rule 62 (factor -> PLUS ID .)
+    FORWARD_SLASH   reduce using rule 62 (factor -> PLUS ID .)
+    PLUS            reduce using rule 62 (factor -> PLUS ID .)
+    MINUS           reduce using rule 62 (factor -> PLUS ID .)
+    GREATER_THAN    reduce using rule 62 (factor -> PLUS ID .)
+    LOWER_THAN      reduce using rule 62 (factor -> PLUS ID .)
+    NOT_EQUAL       reduce using rule 62 (factor -> PLUS ID .)
+    SEMI_COLON      reduce using rule 62 (factor -> PLUS ID .)
+    R_PARENTHESIS   reduce using rule 62 (factor -> PLUS ID .)
+    COMMA           reduce using rule 62 (factor -> PLUS ID .)
+
+
+state 116
+
+    (63) factor -> PLUS cte .
+
+    ASTERISK        reduce using rule 63 (factor -> PLUS cte .)
+    FORWARD_SLASH   reduce using rule 63 (factor -> PLUS cte .)
+    PLUS            reduce using rule 63 (factor -> PLUS cte .)
+    MINUS           reduce using rule 63 (factor -> PLUS cte .)
+    GREATER_THAN    reduce using rule 63 (factor -> PLUS cte .)
+    LOWER_THAN      reduce using rule 63 (factor -> PLUS cte .)
+    NOT_EQUAL       reduce using rule 63 (factor -> PLUS cte .)
+    SEMI_COLON      reduce using rule 63 (factor -> PLUS cte .)
+    R_PARENTHESIS   reduce using rule 63 (factor -> PLUS cte .)
+    COMMA           reduce using rule 63 (factor -> PLUS cte .)
+
+
+state 117
+
+    (11) termino -> termino ASTERISK . factor
+    (61) factor -> . L_PARENTHESIS expression R_PARENTHESIS
+    (62) factor -> . PLUS ID
+    (63) factor -> . PLUS cte
+    (64) factor -> . MINUS ID
+    (65) factor -> . MINUS cte
+    (66) factor -> . ID
+    (67) factor -> . cte
+    (17) cte -> . CNT_INT
+    (18) cte -> . CNT_FLOAT
+
+    L_PARENTHESIS   shift and go to state 88
+    PLUS            shift and go to state 84
+    MINUS           shift and go to state 86
+    ID              shift and go to state 81
+    CNT_INT         shift and go to state 90
+    CNT_FLOAT       shift and go to state 91
+
+    factor                         shift and go to state 142
+    cte                            shift and go to state 89
+
+state 118
+
+    (12) termino -> termino FORWARD_SLASH . factor
+    (61) factor -> . L_PARENTHESIS expression R_PARENTHESIS
+    (62) factor -> . PLUS ID
+    (63) factor -> . PLUS cte
+    (64) factor -> . MINUS ID
+    (65) factor -> . MINUS cte
+    (66) factor -> . ID
+    (67) factor -> . cte
+    (17) cte -> . CNT_INT
+    (18) cte -> . CNT_FLOAT
+
+    L_PARENTHESIS   shift and go to state 88
+    PLUS            shift and go to state 84
+    MINUS           shift and go to state 86
+    ID              shift and go to state 81
+    CNT_INT         shift and go to state 90
+    CNT_FLOAT       shift and go to state 91
+
+    factor                         shift and go to state 143
+    cte                            shift and go to state 89
+
+state 119
+
+    (64) factor -> MINUS ID .
+
+    ASTERISK        reduce using rule 64 (factor -> MINUS ID .)
+    FORWARD_SLASH   reduce using rule 64 (factor -> MINUS ID .)
+    PLUS            reduce using rule 64 (factor -> MINUS ID .)
+    MINUS           reduce using rule 64 (factor -> MINUS ID .)
+    GREATER_THAN    reduce using rule 64 (factor -> MINUS ID .)
+    LOWER_THAN      reduce using rule 64 (factor -> MINUS ID .)
+    NOT_EQUAL       reduce using rule 64 (factor -> MINUS ID .)
+    SEMI_COLON      reduce using rule 64 (factor -> MINUS ID .)
+    R_PARENTHESIS   reduce using rule 64 (factor -> MINUS ID .)
+    COMMA           reduce using rule 64 (factor -> MINUS ID .)
+
+
+state 120
+
+    (65) factor -> MINUS cte .
+
+    ASTERISK        reduce using rule 65 (factor -> MINUS cte .)
+    FORWARD_SLASH   reduce using rule 65 (factor -> MINUS cte .)
+    PLUS            reduce using rule 65 (factor -> MINUS cte .)
+    MINUS           reduce using rule 65 (factor -> MINUS cte .)
+    GREATER_THAN    reduce using rule 65 (factor -> MINUS cte .)
+    LOWER_THAN      reduce using rule 65 (factor -> MINUS cte .)
+    NOT_EQUAL       reduce using rule 65 (factor -> MINUS cte .)
+    SEMI_COLON      reduce using rule 65 (factor -> MINUS cte .)
+    R_PARENTHESIS   reduce using rule 65 (factor -> MINUS cte .)
+    COMMA           reduce using rule 65 (factor -> MINUS cte .)
+
+
 state 121
 
-    (68) param_list -> ID COLON type . param_list_prime
-    (69) param_list_prime -> . COMMA param_list
-    (70) param_list_prime -> . empty
-    (16) empty -> .
+    (61) factor -> L_PARENTHESIS expression . R_PARENTHESIS
 
-    COMMA           shift and go to state 140
-    R_PARENTHESIS   reduce using rule 16 (empty -> .)
+    R_PARENTHESIS   shift and go to state 144
 
-    param_list_prime               shift and go to state 139
-    empty                          shift and go to state 141
 
 state 122
 
-    (64) funcs -> VOID ID L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET . vars body R_SBRACKET SEMI_COLON
-    (65) funcs -> VOID ID L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET . body R_SBRACKET SEMI_COLON
-    (1) vars -> . VAR var_list
-    (29) body -> . L_CBRACKET R_CBRACKET
-    (30) body -> . L_CBRACKET statement_list R_CBRACKET
+    (24) f_call -> ID era L_PARENTHESIS R_PARENTHESIS . gosub SEMI_COLON
+    (31) gosub -> . empty
+    (16) empty -> .
 
-    VAR             shift and go to state 8
-    L_CBRACKET      shift and go to state 15
+    SEMI_COLON      reduce using rule 16 (empty -> .)
 
-    vars                           shift and go to state 142
-    body                           shift and go to state 143
+    gosub                          shift and go to state 145
+    empty                          shift and go to state 146
 
 state 123
 
-    (66) funcs -> VOID ID L_PARENTHESIS R_PARENTHESIS L_SBRACKET vars . body R_SBRACKET SEMI_COLON
-    (29) body -> . L_CBRACKET R_CBRACKET
-    (30) body -> . L_CBRACKET statement_list R_CBRACKET
+    (25) f_call -> ID era L_PARENTHESIS expression_list . R_PARENTHESIS gosub SEMI_COLON
 
-    L_CBRACKET      shift and go to state 15
+    R_PARENTHESIS   shift and go to state 147
 
-    body                           shift and go to state 144
 
 state 124
 
-    (67) funcs -> VOID ID L_PARENTHESIS R_PARENTHESIS L_SBRACKET body . R_SBRACKET SEMI_COLON
+    (26) expression_list -> expression . expression_list_prime
+    (32) f_call_arg -> expression .
+    (28) expression_list_prime -> . COMMA expression_list
+    (29) expression_list_prime -> . empty
+    (16) empty -> .
 
-    R_SBRACKET      shift and go to state 145
+  ! shift/reduce conflict for COMMA resolved as shift
+  ! reduce/reduce conflict for R_PARENTHESIS resolved using rule 16 (empty -> .)
+    COMMA           shift and go to state 149
+    R_PARENTHESIS   reduce using rule 16 (empty -> .)
 
+  ! COMMA           [ reduce using rule 32 (f_call_arg -> expression .) ]
+  ! R_PARENTHESIS   [ reduce using rule 32 (f_call_arg -> expression .) ]
+
+    expression_list_prime          shift and go to state 148
+    empty                          shift and go to state 150
 
 state 125
+
+    (27) expression_list -> f_call_arg . expression_list_prime
+    (28) expression_list_prime -> . COMMA expression_list
+    (29) expression_list_prime -> . empty
+    (16) empty -> .
+
+    COMMA           shift and go to state 149
+    R_PARENTHESIS   reduce using rule 16 (empty -> .)
+
+    expression_list_prime          shift and go to state 151
+    empty                          shift and go to state 150
+
+state 126
+
+    (43) condition -> IF begin_if expression end_if . body else_part SEMI_COLON
+    (33) body -> . L_CBRACKET R_CBRACKET
+    (34) body -> . L_CBRACKET statement_list R_CBRACKET
+
+    L_CBRACKET      shift and go to state 29
+
+    body                           shift and go to state 152
+
+state 127
+
+    (47) end_if -> R_PARENTHESIS .
+
+    L_CBRACKET      reduce using rule 47 (end_if -> R_PARENTHESIS .)
+
+
+state 128
+
+    (51) cycle -> WHILE begin_while while_expression R_PARENTHESIS . DO body end_while SEMI_COLON
+
+    DO              shift and go to state 153
+
+
+state 129
+
+    (55) print_stmt -> PRINT L_PARENTHESIS print_expression_list R_PARENTHESIS . SEMI_COLON
+
+    SEMI_COLON      shift and go to state 154
+
+
+state 130
+
+    (56) print_expression_list -> print_item print_expression_list_prime .
+
+    R_PARENTHESIS   reduce using rule 56 (print_expression_list -> print_item print_expression_list_prime .)
+
+
+state 131
+
+    (59) print_expression_list_prime -> COMMA . print_expression_list
+    (56) print_expression_list -> . print_item print_expression_list_prime
+    (57) print_item -> . expression
+    (58) print_item -> . CNT_STRING
+    (19) expression -> . exp expression_prime
+    (8) exp -> . exp PLUS termino
+    (9) exp -> . exp MINUS termino
+    (10) exp -> . termino
+    (11) termino -> . termino ASTERISK factor
+    (12) termino -> . termino FORWARD_SLASH factor
+    (13) termino -> . factor
+    (61) factor -> . L_PARENTHESIS expression R_PARENTHESIS
+    (62) factor -> . PLUS ID
+    (63) factor -> . PLUS cte
+    (64) factor -> . MINUS ID
+    (65) factor -> . MINUS cte
+    (66) factor -> . ID
+    (67) factor -> . cte
+    (17) cte -> . CNT_INT
+    (18) cte -> . CNT_FLOAT
+
+    CNT_STRING      shift and go to state 99
+    L_PARENTHESIS   shift and go to state 88
+    PLUS            shift and go to state 84
+    MINUS           shift and go to state 86
+    ID              shift and go to state 81
+    CNT_INT         shift and go to state 90
+    CNT_FLOAT       shift and go to state 91
+
+    print_expression_list          shift and go to state 155
+    print_item                     shift and go to state 97
+    expression                     shift and go to state 98
+    exp                            shift and go to state 83
+    termino                        shift and go to state 85
+    factor                         shift and go to state 87
+    cte                            shift and go to state 89
+
+state 132
+
+    (60) print_expression_list_prime -> empty .
+
+    R_PARENTHESIS   reduce using rule 60 (print_expression_list_prime -> empty .)
+
+
+state 133
+
+    (72) param_list -> ID COLON type . param param_list_prime
+    (73) param -> . empty
+    (16) empty -> .
+
+    COMMA           reduce using rule 16 (empty -> .)
+    R_PARENTHESIS   reduce using rule 16 (empty -> .)
+
+    param                          shift and go to state 156
+    empty                          shift and go to state 157
+
+state 134
+
+    (68) funcs -> VOID ID func_start L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET . vars body R_SBRACKET func_end SEMI_COLON
+    (69) funcs -> VOID ID func_start L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET . body R_SBRACKET func_end SEMI_COLON
+    (1) vars -> . VAR var_list
+    (33) body -> . L_CBRACKET R_CBRACKET
+    (34) body -> . L_CBRACKET statement_list R_CBRACKET
+
+    VAR             shift and go to state 10
+    L_CBRACKET      shift and go to state 29
+
+    vars                           shift and go to state 158
+    body                           shift and go to state 159
+
+state 135
+
+    (70) funcs -> VOID ID func_start L_PARENTHESIS R_PARENTHESIS L_SBRACKET vars . body R_SBRACKET func_end SEMI_COLON
+    (33) body -> . L_CBRACKET R_CBRACKET
+    (34) body -> . L_CBRACKET statement_list R_CBRACKET
+
+    L_CBRACKET      shift and go to state 29
+
+    body                           shift and go to state 160
+
+state 136
+
+    (71) funcs -> VOID ID func_start L_PARENTHESIS R_PARENTHESIS L_SBRACKET body . R_SBRACKET func_end SEMI_COLON
+
+    R_SBRACKET      shift and go to state 161
+
+
+state 137
 
     (8) exp -> exp PLUS termino .
     (11) termino -> termino . ASTERISK factor
@@ -1811,13 +1955,13 @@ state 125
     LOWER_THAN      reduce using rule 8 (exp -> exp PLUS termino .)
     NOT_EQUAL       reduce using rule 8 (exp -> exp PLUS termino .)
     SEMI_COLON      reduce using rule 8 (exp -> exp PLUS termino .)
-    COMMA           reduce using rule 8 (exp -> exp PLUS termino .)
     R_PARENTHESIS   reduce using rule 8 (exp -> exp PLUS termino .)
-    ASTERISK        shift and go to state 101
-    FORWARD_SLASH   shift and go to state 102
+    COMMA           reduce using rule 8 (exp -> exp PLUS termino .)
+    ASTERISK        shift and go to state 117
+    FORWARD_SLASH   shift and go to state 118
 
 
-state 126
+state 138
 
     (9) exp -> exp MINUS termino .
     (11) termino -> termino . ASTERISK factor
@@ -1829,52 +1973,52 @@ state 126
     LOWER_THAN      reduce using rule 9 (exp -> exp MINUS termino .)
     NOT_EQUAL       reduce using rule 9 (exp -> exp MINUS termino .)
     SEMI_COLON      reduce using rule 9 (exp -> exp MINUS termino .)
-    COMMA           reduce using rule 9 (exp -> exp MINUS termino .)
     R_PARENTHESIS   reduce using rule 9 (exp -> exp MINUS termino .)
-    ASTERISK        shift and go to state 101
-    FORWARD_SLASH   shift and go to state 102
+    COMMA           reduce using rule 9 (exp -> exp MINUS termino .)
+    ASTERISK        shift and go to state 117
+    FORWARD_SLASH   shift and go to state 118
 
 
-state 127
+state 139
 
     (20) expression_prime -> GREATER_THAN exp .
     (8) exp -> exp . PLUS termino
     (9) exp -> exp . MINUS termino
 
     SEMI_COLON      reduce using rule 20 (expression_prime -> GREATER_THAN exp .)
-    COMMA           reduce using rule 20 (expression_prime -> GREATER_THAN exp .)
     R_PARENTHESIS   reduce using rule 20 (expression_prime -> GREATER_THAN exp .)
-    PLUS            shift and go to state 93
-    MINUS           shift and go to state 94
+    COMMA           reduce using rule 20 (expression_prime -> GREATER_THAN exp .)
+    PLUS            shift and go to state 109
+    MINUS           shift and go to state 110
 
 
-state 128
+state 140
 
     (21) expression_prime -> LOWER_THAN exp .
     (8) exp -> exp . PLUS termino
     (9) exp -> exp . MINUS termino
 
     SEMI_COLON      reduce using rule 21 (expression_prime -> LOWER_THAN exp .)
-    COMMA           reduce using rule 21 (expression_prime -> LOWER_THAN exp .)
     R_PARENTHESIS   reduce using rule 21 (expression_prime -> LOWER_THAN exp .)
-    PLUS            shift and go to state 93
-    MINUS           shift and go to state 94
+    COMMA           reduce using rule 21 (expression_prime -> LOWER_THAN exp .)
+    PLUS            shift and go to state 109
+    MINUS           shift and go to state 110
 
 
-state 129
+state 141
 
     (22) expression_prime -> NOT_EQUAL exp .
     (8) exp -> exp . PLUS termino
     (9) exp -> exp . MINUS termino
 
     SEMI_COLON      reduce using rule 22 (expression_prime -> NOT_EQUAL exp .)
-    COMMA           reduce using rule 22 (expression_prime -> NOT_EQUAL exp .)
     R_PARENTHESIS   reduce using rule 22 (expression_prime -> NOT_EQUAL exp .)
-    PLUS            shift and go to state 93
-    MINUS           shift and go to state 94
+    COMMA           reduce using rule 22 (expression_prime -> NOT_EQUAL exp .)
+    PLUS            shift and go to state 109
+    MINUS           shift and go to state 110
 
 
-state 130
+state 142
 
     (11) termino -> termino ASTERISK factor .
 
@@ -1886,11 +2030,11 @@ state 130
     LOWER_THAN      reduce using rule 11 (termino -> termino ASTERISK factor .)
     NOT_EQUAL       reduce using rule 11 (termino -> termino ASTERISK factor .)
     SEMI_COLON      reduce using rule 11 (termino -> termino ASTERISK factor .)
-    COMMA           reduce using rule 11 (termino -> termino ASTERISK factor .)
     R_PARENTHESIS   reduce using rule 11 (termino -> termino ASTERISK factor .)
+    COMMA           reduce using rule 11 (termino -> termino ASTERISK factor .)
 
 
-state 131
+state 143
 
     (12) termino -> termino FORWARD_SLASH factor .
 
@@ -1902,316 +2046,497 @@ state 131
     LOWER_THAN      reduce using rule 12 (termino -> termino FORWARD_SLASH factor .)
     NOT_EQUAL       reduce using rule 12 (termino -> termino FORWARD_SLASH factor .)
     SEMI_COLON      reduce using rule 12 (termino -> termino FORWARD_SLASH factor .)
-    COMMA           reduce using rule 12 (termino -> termino FORWARD_SLASH factor .)
     R_PARENTHESIS   reduce using rule 12 (termino -> termino FORWARD_SLASH factor .)
-
-
-state 132
-
-    (57) factor -> L_PARENTHESIS expression R_PARENTHESIS .
-
-    ASTERISK        reduce using rule 57 (factor -> L_PARENTHESIS expression R_PARENTHESIS .)
-    FORWARD_SLASH   reduce using rule 57 (factor -> L_PARENTHESIS expression R_PARENTHESIS .)
-    PLUS            reduce using rule 57 (factor -> L_PARENTHESIS expression R_PARENTHESIS .)
-    MINUS           reduce using rule 57 (factor -> L_PARENTHESIS expression R_PARENTHESIS .)
-    GREATER_THAN    reduce using rule 57 (factor -> L_PARENTHESIS expression R_PARENTHESIS .)
-    LOWER_THAN      reduce using rule 57 (factor -> L_PARENTHESIS expression R_PARENTHESIS .)
-    NOT_EQUAL       reduce using rule 57 (factor -> L_PARENTHESIS expression R_PARENTHESIS .)
-    SEMI_COLON      reduce using rule 57 (factor -> L_PARENTHESIS expression R_PARENTHESIS .)
-    COMMA           reduce using rule 57 (factor -> L_PARENTHESIS expression R_PARENTHESIS .)
-    R_PARENTHESIS   reduce using rule 57 (factor -> L_PARENTHESIS expression R_PARENTHESIS .)
-
-
-state 133
-
-    (25) f_call -> ID L_PARENTHESIS expression_list R_PARENTHESIS SEMI_COLON .
-
-    ID              reduce using rule 25 (f_call -> ID L_PARENTHESIS expression_list R_PARENTHESIS SEMI_COLON .)
-    IF              reduce using rule 25 (f_call -> ID L_PARENTHESIS expression_list R_PARENTHESIS SEMI_COLON .)
-    WHILE           reduce using rule 25 (f_call -> ID L_PARENTHESIS expression_list R_PARENTHESIS SEMI_COLON .)
-    PRINT           reduce using rule 25 (f_call -> ID L_PARENTHESIS expression_list R_PARENTHESIS SEMI_COLON .)
-    R_CBRACKET      reduce using rule 25 (f_call -> ID L_PARENTHESIS expression_list R_PARENTHESIS SEMI_COLON .)
-
-
-state 134
-
-    (27) expression_list_prime -> COMMA expression_list .
-
-    R_PARENTHESIS   reduce using rule 27 (expression_list_prime -> COMMA expression_list .)
-
-
-state 135
-
-    (39) condition -> IF begin_if expression end_if body . else_part SEMI_COLON
-    (40) else_part -> . begin_else body end_else
-    (41) else_part -> . end_if_no_else
-    (45) begin_else -> . ELSE
-    (44) end_if_no_else -> . empty
-    (16) empty -> .
-
-    ELSE            shift and go to state 149
-    SEMI_COLON      reduce using rule 16 (empty -> .)
-
-    else_part                      shift and go to state 146
-    begin_else                     shift and go to state 147
-    end_if_no_else                 shift and go to state 148
-    empty                          shift and go to state 150
-
-state 136
-
-    (47) cycle -> WHILE begin_while while_expression R_PARENTHESIS DO . body end_while SEMI_COLON
-    (29) body -> . L_CBRACKET R_CBRACKET
-    (30) body -> . L_CBRACKET statement_list R_CBRACKET
-
-    L_CBRACKET      shift and go to state 15
-
-    body                           shift and go to state 151
-
-state 137
-
-    (51) print_stmt -> PRINT L_PARENTHESIS print_expression_list R_PARENTHESIS SEMI_COLON .
-
-    ID              reduce using rule 51 (print_stmt -> PRINT L_PARENTHESIS print_expression_list R_PARENTHESIS SEMI_COLON .)
-    IF              reduce using rule 51 (print_stmt -> PRINT L_PARENTHESIS print_expression_list R_PARENTHESIS SEMI_COLON .)
-    WHILE           reduce using rule 51 (print_stmt -> PRINT L_PARENTHESIS print_expression_list R_PARENTHESIS SEMI_COLON .)
-    PRINT           reduce using rule 51 (print_stmt -> PRINT L_PARENTHESIS print_expression_list R_PARENTHESIS SEMI_COLON .)
-    R_CBRACKET      reduce using rule 51 (print_stmt -> PRINT L_PARENTHESIS print_expression_list R_PARENTHESIS SEMI_COLON .)
-
-
-state 138
-
-    (55) print_expression_list_prime -> COMMA print_expression_list .
-
-    R_PARENTHESIS   reduce using rule 55 (print_expression_list_prime -> COMMA print_expression_list .)
-
-
-state 139
-
-    (68) param_list -> ID COLON type param_list_prime .
-
-    R_PARENTHESIS   reduce using rule 68 (param_list -> ID COLON type param_list_prime .)
-
-
-state 140
-
-    (69) param_list_prime -> COMMA . param_list
-    (68) param_list -> . ID COLON type param_list_prime
-
-    ID              shift and go to state 62
-
-    param_list                     shift and go to state 152
-
-state 141
-
-    (70) param_list_prime -> empty .
-
-    R_PARENTHESIS   reduce using rule 70 (param_list_prime -> empty .)
-
-
-state 142
-
-    (64) funcs -> VOID ID L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET vars . body R_SBRACKET SEMI_COLON
-    (29) body -> . L_CBRACKET R_CBRACKET
-    (30) body -> . L_CBRACKET statement_list R_CBRACKET
-
-    L_CBRACKET      shift and go to state 15
-
-    body                           shift and go to state 153
-
-state 143
-
-    (65) funcs -> VOID ID L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET body . R_SBRACKET SEMI_COLON
-
-    R_SBRACKET      shift and go to state 154
+    COMMA           reduce using rule 12 (termino -> termino FORWARD_SLASH factor .)
 
 
 state 144
 
-    (66) funcs -> VOID ID L_PARENTHESIS R_PARENTHESIS L_SBRACKET vars body . R_SBRACKET SEMI_COLON
+    (61) factor -> L_PARENTHESIS expression R_PARENTHESIS .
 
-    R_SBRACKET      shift and go to state 155
+    ASTERISK        reduce using rule 61 (factor -> L_PARENTHESIS expression R_PARENTHESIS .)
+    FORWARD_SLASH   reduce using rule 61 (factor -> L_PARENTHESIS expression R_PARENTHESIS .)
+    PLUS            reduce using rule 61 (factor -> L_PARENTHESIS expression R_PARENTHESIS .)
+    MINUS           reduce using rule 61 (factor -> L_PARENTHESIS expression R_PARENTHESIS .)
+    GREATER_THAN    reduce using rule 61 (factor -> L_PARENTHESIS expression R_PARENTHESIS .)
+    LOWER_THAN      reduce using rule 61 (factor -> L_PARENTHESIS expression R_PARENTHESIS .)
+    NOT_EQUAL       reduce using rule 61 (factor -> L_PARENTHESIS expression R_PARENTHESIS .)
+    SEMI_COLON      reduce using rule 61 (factor -> L_PARENTHESIS expression R_PARENTHESIS .)
+    R_PARENTHESIS   reduce using rule 61 (factor -> L_PARENTHESIS expression R_PARENTHESIS .)
+    COMMA           reduce using rule 61 (factor -> L_PARENTHESIS expression R_PARENTHESIS .)
 
 
 state 145
 
-    (67) funcs -> VOID ID L_PARENTHESIS R_PARENTHESIS L_SBRACKET body R_SBRACKET . SEMI_COLON
-
-    SEMI_COLON      shift and go to state 156
-
-
-state 146
-
-    (39) condition -> IF begin_if expression end_if body else_part . SEMI_COLON
-
-    SEMI_COLON      shift and go to state 157
-
-
-state 147
-
-    (40) else_part -> begin_else . body end_else
-    (29) body -> . L_CBRACKET R_CBRACKET
-    (30) body -> . L_CBRACKET statement_list R_CBRACKET
-
-    L_CBRACKET      shift and go to state 15
-
-    body                           shift and go to state 158
-
-state 148
-
-    (41) else_part -> end_if_no_else .
-
-    SEMI_COLON      reduce using rule 41 (else_part -> end_if_no_else .)
-
-
-state 149
-
-    (45) begin_else -> ELSE .
-
-    L_CBRACKET      reduce using rule 45 (begin_else -> ELSE .)
-
-
-state 150
-
-    (44) end_if_no_else -> empty .
-
-    SEMI_COLON      reduce using rule 44 (end_if_no_else -> empty .)
-
-
-state 151
-
-    (47) cycle -> WHILE begin_while while_expression R_PARENTHESIS DO body . end_while SEMI_COLON
-    (50) end_while -> . empty
-    (16) empty -> .
-
-    SEMI_COLON      reduce using rule 16 (empty -> .)
-
-    end_while                      shift and go to state 159
-    empty                          shift and go to state 160
-
-state 152
-
-    (69) param_list_prime -> COMMA param_list .
-
-    R_PARENTHESIS   reduce using rule 69 (param_list_prime -> COMMA param_list .)
-
-
-state 153
-
-    (64) funcs -> VOID ID L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET vars body . R_SBRACKET SEMI_COLON
-
-    R_SBRACKET      shift and go to state 161
-
-
-state 154
-
-    (65) funcs -> VOID ID L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET body R_SBRACKET . SEMI_COLON
+    (24) f_call -> ID era L_PARENTHESIS R_PARENTHESIS gosub . SEMI_COLON
 
     SEMI_COLON      shift and go to state 162
 
 
-state 155
+state 146
 
-    (66) funcs -> VOID ID L_PARENTHESIS R_PARENTHESIS L_SBRACKET vars body R_SBRACKET . SEMI_COLON
+    (31) gosub -> empty .
 
-    SEMI_COLON      shift and go to state 163
-
-
-state 156
-
-    (67) funcs -> VOID ID L_PARENTHESIS R_PARENTHESIS L_SBRACKET body R_SBRACKET SEMI_COLON .
-
-    VOID            reduce using rule 67 (funcs -> VOID ID L_PARENTHESIS R_PARENTHESIS L_SBRACKET body R_SBRACKET SEMI_COLON .)
-    MAIN            reduce using rule 67 (funcs -> VOID ID L_PARENTHESIS R_PARENTHESIS L_SBRACKET body R_SBRACKET SEMI_COLON .)
+    SEMI_COLON      reduce using rule 31 (gosub -> empty .)
 
 
-state 157
+state 147
 
-    (39) condition -> IF begin_if expression end_if body else_part SEMI_COLON .
-
-    ID              reduce using rule 39 (condition -> IF begin_if expression end_if body else_part SEMI_COLON .)
-    IF              reduce using rule 39 (condition -> IF begin_if expression end_if body else_part SEMI_COLON .)
-    WHILE           reduce using rule 39 (condition -> IF begin_if expression end_if body else_part SEMI_COLON .)
-    PRINT           reduce using rule 39 (condition -> IF begin_if expression end_if body else_part SEMI_COLON .)
-    R_CBRACKET      reduce using rule 39 (condition -> IF begin_if expression end_if body else_part SEMI_COLON .)
-
-
-state 158
-
-    (40) else_part -> begin_else body . end_else
-    (46) end_else -> . empty
+    (25) f_call -> ID era L_PARENTHESIS expression_list R_PARENTHESIS . gosub SEMI_COLON
+    (31) gosub -> . empty
     (16) empty -> .
 
     SEMI_COLON      reduce using rule 16 (empty -> .)
 
-    end_else                       shift and go to state 164
-    empty                          shift and go to state 165
+    gosub                          shift and go to state 163
+    empty                          shift and go to state 146
+
+state 148
+
+    (26) expression_list -> expression expression_list_prime .
+
+    R_PARENTHESIS   reduce using rule 26 (expression_list -> expression expression_list_prime .)
+
+
+state 149
+
+    (28) expression_list_prime -> COMMA . expression_list
+    (26) expression_list -> . expression expression_list_prime
+    (27) expression_list -> . f_call_arg expression_list_prime
+    (19) expression -> . exp expression_prime
+    (32) f_call_arg -> . expression
+    (8) exp -> . exp PLUS termino
+    (9) exp -> . exp MINUS termino
+    (10) exp -> . termino
+    (11) termino -> . termino ASTERISK factor
+    (12) termino -> . termino FORWARD_SLASH factor
+    (13) termino -> . factor
+    (61) factor -> . L_PARENTHESIS expression R_PARENTHESIS
+    (62) factor -> . PLUS ID
+    (63) factor -> . PLUS cte
+    (64) factor -> . MINUS ID
+    (65) factor -> . MINUS cte
+    (66) factor -> . ID
+    (67) factor -> . cte
+    (17) cte -> . CNT_INT
+    (18) cte -> . CNT_FLOAT
+
+    L_PARENTHESIS   shift and go to state 88
+    PLUS            shift and go to state 84
+    MINUS           shift and go to state 86
+    ID              shift and go to state 81
+    CNT_INT         shift and go to state 90
+    CNT_FLOAT       shift and go to state 91
+
+    expression_list                shift and go to state 164
+    expression                     shift and go to state 124
+    f_call_arg                     shift and go to state 125
+    exp                            shift and go to state 83
+    termino                        shift and go to state 85
+    factor                         shift and go to state 87
+    cte                            shift and go to state 89
+
+state 150
+
+    (29) expression_list_prime -> empty .
+
+    R_PARENTHESIS   reduce using rule 29 (expression_list_prime -> empty .)
+
+
+state 151
+
+    (27) expression_list -> f_call_arg expression_list_prime .
+
+    R_PARENTHESIS   reduce using rule 27 (expression_list -> f_call_arg expression_list_prime .)
+
+
+state 152
+
+    (43) condition -> IF begin_if expression end_if body . else_part SEMI_COLON
+    (44) else_part -> . begin_else body end_else
+    (45) else_part -> . end_if_no_else
+    (49) begin_else -> . ELSE
+    (48) end_if_no_else -> . empty
+    (16) empty -> .
+
+    ELSE            shift and go to state 168
+    SEMI_COLON      reduce using rule 16 (empty -> .)
+
+    else_part                      shift and go to state 165
+    begin_else                     shift and go to state 166
+    end_if_no_else                 shift and go to state 167
+    empty                          shift and go to state 169
+
+state 153
+
+    (51) cycle -> WHILE begin_while while_expression R_PARENTHESIS DO . body end_while SEMI_COLON
+    (33) body -> . L_CBRACKET R_CBRACKET
+    (34) body -> . L_CBRACKET statement_list R_CBRACKET
+
+    L_CBRACKET      shift and go to state 29
+
+    body                           shift and go to state 170
+
+state 154
+
+    (55) print_stmt -> PRINT L_PARENTHESIS print_expression_list R_PARENTHESIS SEMI_COLON .
+
+    ID              reduce using rule 55 (print_stmt -> PRINT L_PARENTHESIS print_expression_list R_PARENTHESIS SEMI_COLON .)
+    IF              reduce using rule 55 (print_stmt -> PRINT L_PARENTHESIS print_expression_list R_PARENTHESIS SEMI_COLON .)
+    WHILE           reduce using rule 55 (print_stmt -> PRINT L_PARENTHESIS print_expression_list R_PARENTHESIS SEMI_COLON .)
+    PRINT           reduce using rule 55 (print_stmt -> PRINT L_PARENTHESIS print_expression_list R_PARENTHESIS SEMI_COLON .)
+    R_CBRACKET      reduce using rule 55 (print_stmt -> PRINT L_PARENTHESIS print_expression_list R_PARENTHESIS SEMI_COLON .)
+
+
+state 155
+
+    (59) print_expression_list_prime -> COMMA print_expression_list .
+
+    R_PARENTHESIS   reduce using rule 59 (print_expression_list_prime -> COMMA print_expression_list .)
+
+
+state 156
+
+    (72) param_list -> ID COLON type param . param_list_prime
+    (74) param_list_prime -> . COMMA param_list
+    (75) param_list_prime -> . empty
+    (16) empty -> .
+
+    COMMA           shift and go to state 172
+    R_PARENTHESIS   reduce using rule 16 (empty -> .)
+
+    param_list_prime               shift and go to state 171
+    empty                          shift and go to state 173
+
+state 157
+
+    (73) param -> empty .
+
+    COMMA           reduce using rule 73 (param -> empty .)
+    R_PARENTHESIS   reduce using rule 73 (param -> empty .)
+
+
+state 158
+
+    (68) funcs -> VOID ID func_start L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET vars . body R_SBRACKET func_end SEMI_COLON
+    (33) body -> . L_CBRACKET R_CBRACKET
+    (34) body -> . L_CBRACKET statement_list R_CBRACKET
+
+    L_CBRACKET      shift and go to state 29
+
+    body                           shift and go to state 174
 
 state 159
 
-    (47) cycle -> WHILE begin_while while_expression R_PARENTHESIS DO body end_while . SEMI_COLON
+    (69) funcs -> VOID ID func_start L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET body . R_SBRACKET func_end SEMI_COLON
 
-    SEMI_COLON      shift and go to state 166
+    R_SBRACKET      shift and go to state 175
 
 
 state 160
 
-    (50) end_while -> empty .
+    (70) funcs -> VOID ID func_start L_PARENTHESIS R_PARENTHESIS L_SBRACKET vars body . R_SBRACKET func_end SEMI_COLON
 
-    SEMI_COLON      reduce using rule 50 (end_while -> empty .)
+    R_SBRACKET      shift and go to state 176
 
 
 state 161
 
-    (64) funcs -> VOID ID L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET vars body R_SBRACKET . SEMI_COLON
+    (71) funcs -> VOID ID func_start L_PARENTHESIS R_PARENTHESIS L_SBRACKET body R_SBRACKET . func_end SEMI_COLON
+    (77) func_end -> . empty
+    (16) empty -> .
 
-    SEMI_COLON      shift and go to state 167
+    SEMI_COLON      reduce using rule 16 (empty -> .)
 
+    func_end                       shift and go to state 177
+    empty                          shift and go to state 178
 
 state 162
 
-    (65) funcs -> VOID ID L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET body R_SBRACKET SEMI_COLON .
+    (24) f_call -> ID era L_PARENTHESIS R_PARENTHESIS gosub SEMI_COLON .
 
-    VOID            reduce using rule 65 (funcs -> VOID ID L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET body R_SBRACKET SEMI_COLON .)
-    MAIN            reduce using rule 65 (funcs -> VOID ID L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET body R_SBRACKET SEMI_COLON .)
+    ID              reduce using rule 24 (f_call -> ID era L_PARENTHESIS R_PARENTHESIS gosub SEMI_COLON .)
+    IF              reduce using rule 24 (f_call -> ID era L_PARENTHESIS R_PARENTHESIS gosub SEMI_COLON .)
+    WHILE           reduce using rule 24 (f_call -> ID era L_PARENTHESIS R_PARENTHESIS gosub SEMI_COLON .)
+    PRINT           reduce using rule 24 (f_call -> ID era L_PARENTHESIS R_PARENTHESIS gosub SEMI_COLON .)
+    R_CBRACKET      reduce using rule 24 (f_call -> ID era L_PARENTHESIS R_PARENTHESIS gosub SEMI_COLON .)
 
 
 state 163
 
-    (66) funcs -> VOID ID L_PARENTHESIS R_PARENTHESIS L_SBRACKET vars body R_SBRACKET SEMI_COLON .
+    (25) f_call -> ID era L_PARENTHESIS expression_list R_PARENTHESIS gosub . SEMI_COLON
 
-    VOID            reduce using rule 66 (funcs -> VOID ID L_PARENTHESIS R_PARENTHESIS L_SBRACKET vars body R_SBRACKET SEMI_COLON .)
-    MAIN            reduce using rule 66 (funcs -> VOID ID L_PARENTHESIS R_PARENTHESIS L_SBRACKET vars body R_SBRACKET SEMI_COLON .)
+    SEMI_COLON      shift and go to state 179
 
 
 state 164
 
-    (40) else_part -> begin_else body end_else .
+    (28) expression_list_prime -> COMMA expression_list .
 
-    SEMI_COLON      reduce using rule 40 (else_part -> begin_else body end_else .)
+    R_PARENTHESIS   reduce using rule 28 (expression_list_prime -> COMMA expression_list .)
 
 
 state 165
 
-    (46) end_else -> empty .
+    (43) condition -> IF begin_if expression end_if body else_part . SEMI_COLON
 
-    SEMI_COLON      reduce using rule 46 (end_else -> empty .)
+    SEMI_COLON      shift and go to state 180
 
 
 state 166
 
-    (47) cycle -> WHILE begin_while while_expression R_PARENTHESIS DO body end_while SEMI_COLON .
+    (44) else_part -> begin_else . body end_else
+    (33) body -> . L_CBRACKET R_CBRACKET
+    (34) body -> . L_CBRACKET statement_list R_CBRACKET
 
-    ID              reduce using rule 47 (cycle -> WHILE begin_while while_expression R_PARENTHESIS DO body end_while SEMI_COLON .)
-    IF              reduce using rule 47 (cycle -> WHILE begin_while while_expression R_PARENTHESIS DO body end_while SEMI_COLON .)
-    WHILE           reduce using rule 47 (cycle -> WHILE begin_while while_expression R_PARENTHESIS DO body end_while SEMI_COLON .)
-    PRINT           reduce using rule 47 (cycle -> WHILE begin_while while_expression R_PARENTHESIS DO body end_while SEMI_COLON .)
-    R_CBRACKET      reduce using rule 47 (cycle -> WHILE begin_while while_expression R_PARENTHESIS DO body end_while SEMI_COLON .)
+    L_CBRACKET      shift and go to state 29
 
+    body                           shift and go to state 181
 
 state 167
 
-    (64) funcs -> VOID ID L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET vars body R_SBRACKET SEMI_COLON .
+    (45) else_part -> end_if_no_else .
 
-    VOID            reduce using rule 64 (funcs -> VOID ID L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET vars body R_SBRACKET SEMI_COLON .)
-    MAIN            reduce using rule 64 (funcs -> VOID ID L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET vars body R_SBRACKET SEMI_COLON .)
+    SEMI_COLON      reduce using rule 45 (else_part -> end_if_no_else .)
 
+
+state 168
+
+    (49) begin_else -> ELSE .
+
+    L_CBRACKET      reduce using rule 49 (begin_else -> ELSE .)
+
+
+state 169
+
+    (48) end_if_no_else -> empty .
+
+    SEMI_COLON      reduce using rule 48 (end_if_no_else -> empty .)
+
+
+state 170
+
+    (51) cycle -> WHILE begin_while while_expression R_PARENTHESIS DO body . end_while SEMI_COLON
+    (54) end_while -> . empty
+    (16) empty -> .
+
+    SEMI_COLON      reduce using rule 16 (empty -> .)
+
+    end_while                      shift and go to state 182
+    empty                          shift and go to state 183
+
+state 171
+
+    (72) param_list -> ID COLON type param param_list_prime .
+
+    R_PARENTHESIS   reduce using rule 72 (param_list -> ID COLON type param param_list_prime .)
+
+
+state 172
+
+    (74) param_list_prime -> COMMA . param_list
+    (72) param_list -> . ID COLON type param param_list_prime
+
+    ID              shift and go to state 75
+
+    param_list                     shift and go to state 184
+
+state 173
+
+    (75) param_list_prime -> empty .
+
+    R_PARENTHESIS   reduce using rule 75 (param_list_prime -> empty .)
+
+
+state 174
+
+    (68) funcs -> VOID ID func_start L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET vars body . R_SBRACKET func_end SEMI_COLON
+
+    R_SBRACKET      shift and go to state 185
+
+
+state 175
+
+    (69) funcs -> VOID ID func_start L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET body R_SBRACKET . func_end SEMI_COLON
+    (77) func_end -> . empty
+    (16) empty -> .
+
+    SEMI_COLON      reduce using rule 16 (empty -> .)
+
+    func_end                       shift and go to state 186
+    empty                          shift and go to state 178
+
+state 176
+
+    (70) funcs -> VOID ID func_start L_PARENTHESIS R_PARENTHESIS L_SBRACKET vars body R_SBRACKET . func_end SEMI_COLON
+    (77) func_end -> . empty
+    (16) empty -> .
+
+    SEMI_COLON      reduce using rule 16 (empty -> .)
+
+    func_end                       shift and go to state 187
+    empty                          shift and go to state 178
+
+state 177
+
+    (71) funcs -> VOID ID func_start L_PARENTHESIS R_PARENTHESIS L_SBRACKET body R_SBRACKET func_end . SEMI_COLON
+
+    SEMI_COLON      shift and go to state 188
+
+
+state 178
+
+    (77) func_end -> empty .
+
+    SEMI_COLON      reduce using rule 77 (func_end -> empty .)
+
+
+state 179
+
+    (25) f_call -> ID era L_PARENTHESIS expression_list R_PARENTHESIS gosub SEMI_COLON .
+
+    ID              reduce using rule 25 (f_call -> ID era L_PARENTHESIS expression_list R_PARENTHESIS gosub SEMI_COLON .)
+    IF              reduce using rule 25 (f_call -> ID era L_PARENTHESIS expression_list R_PARENTHESIS gosub SEMI_COLON .)
+    WHILE           reduce using rule 25 (f_call -> ID era L_PARENTHESIS expression_list R_PARENTHESIS gosub SEMI_COLON .)
+    PRINT           reduce using rule 25 (f_call -> ID era L_PARENTHESIS expression_list R_PARENTHESIS gosub SEMI_COLON .)
+    R_CBRACKET      reduce using rule 25 (f_call -> ID era L_PARENTHESIS expression_list R_PARENTHESIS gosub SEMI_COLON .)
+
+
+state 180
+
+    (43) condition -> IF begin_if expression end_if body else_part SEMI_COLON .
+
+    ID              reduce using rule 43 (condition -> IF begin_if expression end_if body else_part SEMI_COLON .)
+    IF              reduce using rule 43 (condition -> IF begin_if expression end_if body else_part SEMI_COLON .)
+    WHILE           reduce using rule 43 (condition -> IF begin_if expression end_if body else_part SEMI_COLON .)
+    PRINT           reduce using rule 43 (condition -> IF begin_if expression end_if body else_part SEMI_COLON .)
+    R_CBRACKET      reduce using rule 43 (condition -> IF begin_if expression end_if body else_part SEMI_COLON .)
+
+
+state 181
+
+    (44) else_part -> begin_else body . end_else
+    (50) end_else -> . empty
+    (16) empty -> .
+
+    SEMI_COLON      reduce using rule 16 (empty -> .)
+
+    end_else                       shift and go to state 189
+    empty                          shift and go to state 190
+
+state 182
+
+    (51) cycle -> WHILE begin_while while_expression R_PARENTHESIS DO body end_while . SEMI_COLON
+
+    SEMI_COLON      shift and go to state 191
+
+
+state 183
+
+    (54) end_while -> empty .
+
+    SEMI_COLON      reduce using rule 54 (end_while -> empty .)
+
+
+state 184
+
+    (74) param_list_prime -> COMMA param_list .
+
+    R_PARENTHESIS   reduce using rule 74 (param_list_prime -> COMMA param_list .)
+
+
+state 185
+
+    (68) funcs -> VOID ID func_start L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET vars body R_SBRACKET . func_end SEMI_COLON
+    (77) func_end -> . empty
+    (16) empty -> .
+
+    SEMI_COLON      reduce using rule 16 (empty -> .)
+
+    func_end                       shift and go to state 192
+    empty                          shift and go to state 178
+
+state 186
+
+    (69) funcs -> VOID ID func_start L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET body R_SBRACKET func_end . SEMI_COLON
+
+    SEMI_COLON      shift and go to state 193
+
+
+state 187
+
+    (70) funcs -> VOID ID func_start L_PARENTHESIS R_PARENTHESIS L_SBRACKET vars body R_SBRACKET func_end . SEMI_COLON
+
+    SEMI_COLON      shift and go to state 194
+
+
+state 188
+
+    (71) funcs -> VOID ID func_start L_PARENTHESIS R_PARENTHESIS L_SBRACKET body R_SBRACKET func_end SEMI_COLON .
+
+    VOID            reduce using rule 71 (funcs -> VOID ID func_start L_PARENTHESIS R_PARENTHESIS L_SBRACKET body R_SBRACKET func_end SEMI_COLON .)
+    MAIN            reduce using rule 71 (funcs -> VOID ID func_start L_PARENTHESIS R_PARENTHESIS L_SBRACKET body R_SBRACKET func_end SEMI_COLON .)
+
+
+state 189
+
+    (44) else_part -> begin_else body end_else .
+
+    SEMI_COLON      reduce using rule 44 (else_part -> begin_else body end_else .)
+
+
+state 190
+
+    (50) end_else -> empty .
+
+    SEMI_COLON      reduce using rule 50 (end_else -> empty .)
+
+
+state 191
+
+    (51) cycle -> WHILE begin_while while_expression R_PARENTHESIS DO body end_while SEMI_COLON .
+
+    ID              reduce using rule 51 (cycle -> WHILE begin_while while_expression R_PARENTHESIS DO body end_while SEMI_COLON .)
+    IF              reduce using rule 51 (cycle -> WHILE begin_while while_expression R_PARENTHESIS DO body end_while SEMI_COLON .)
+    WHILE           reduce using rule 51 (cycle -> WHILE begin_while while_expression R_PARENTHESIS DO body end_while SEMI_COLON .)
+    PRINT           reduce using rule 51 (cycle -> WHILE begin_while while_expression R_PARENTHESIS DO body end_while SEMI_COLON .)
+    R_CBRACKET      reduce using rule 51 (cycle -> WHILE begin_while while_expression R_PARENTHESIS DO body end_while SEMI_COLON .)
+
+
+state 192
+
+    (68) funcs -> VOID ID func_start L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET vars body R_SBRACKET func_end . SEMI_COLON
+
+    SEMI_COLON      shift and go to state 195
+
+
+state 193
+
+    (69) funcs -> VOID ID func_start L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET body R_SBRACKET func_end SEMI_COLON .
+
+    VOID            reduce using rule 69 (funcs -> VOID ID func_start L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET body R_SBRACKET func_end SEMI_COLON .)
+    MAIN            reduce using rule 69 (funcs -> VOID ID func_start L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET body R_SBRACKET func_end SEMI_COLON .)
+
+
+state 194
+
+    (70) funcs -> VOID ID func_start L_PARENTHESIS R_PARENTHESIS L_SBRACKET vars body R_SBRACKET func_end SEMI_COLON .
+
+    VOID            reduce using rule 70 (funcs -> VOID ID func_start L_PARENTHESIS R_PARENTHESIS L_SBRACKET vars body R_SBRACKET func_end SEMI_COLON .)
+    MAIN            reduce using rule 70 (funcs -> VOID ID func_start L_PARENTHESIS R_PARENTHESIS L_SBRACKET vars body R_SBRACKET func_end SEMI_COLON .)
+
+
+state 195
+
+    (68) funcs -> VOID ID func_start L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET vars body R_SBRACKET func_end SEMI_COLON .
+
+    VOID            reduce using rule 68 (funcs -> VOID ID func_start L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET vars body R_SBRACKET func_end SEMI_COLON .)
+    MAIN            reduce using rule 68 (funcs -> VOID ID func_start L_PARENTHESIS param_list R_PARENTHESIS L_SBRACKET vars body R_SBRACKET func_end SEMI_COLON .)
+
+WARNING: 
+WARNING: Conflicts:
+WARNING: 
+WARNING: shift/reduce conflict for COMMA in state 124 resolved as shift
+WARNING: reduce/reduce conflict in state 124 resolved using rule (empty -> <empty>)
+WARNING: rejected rule (f_call_arg -> expression) in state 124
+WARNING: Rule (f_call_arg -> expression) is never reduced
