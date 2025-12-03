@@ -564,15 +564,29 @@ def p_program(p):
     program_name = p[2]
     semantic_analyzer.np_start_program(program_name)
     
-    if len(p) == 9:
-        p[0] = ('program', p[2], p[4], p[5], p[7])
-    elif len(p) == 8:
-        if p[4] == 'main':
-            p[0] = ('program', p[2], None, [], p[5])
-        elif isinstance(p[4], tuple) and p[4][0] == 'vars':
-            p[0] = ('program', p[2], p[4], [], p[6])
+    # len(p) = número de símbolos + 1
+    if len(p) == 12:
+        # vars + func_list
+        # PROGRAM ID ; program_start vars func_list MAIN main_start body program_end END
+        # 1       2  3 4             5    6         7    8          9    10          11
+        p[0] = ('program', p[2], p[5], p[6], p[9])
+    elif len(p) == 11:
+        # func_list sin vars  O  vars sin func_list
+        if isinstance(p[5], tuple) and p[5][0] == 'vars':
+            # vars sin func_list
+            # PROGRAM ID ; program_start vars MAIN main_start body program_end END
+            # 1       2  3 4             5    6    7          8    9           10
+            p[0] = ('program', p[2], p[5], [], p[8])
         else:
-            p[0] = ('program', p[2], None, p[4], p[6])
+            # func_list sin vars
+            # PROGRAM ID ; program_start func_list MAIN main_start body program_end END
+            # 1       2  3 4             5         6    7          8    9           10
+            p[0] = ('program', p[2], None, p[5], p[8])
+    elif len(p) == 10:
+        # Sin vars ni func_list
+        # PROGRAM ID ; program_start MAIN main_start body program_end END
+        # 1       2  3 4             5    6          7    8           9
+        p[0] = ('program', p[2], None, [], p[7])
 
 # <A> 
 def p_func_list(p):
@@ -630,20 +644,20 @@ def p_assign(p):
 
 
 # -------------------------------------------------------
+# Excepcion para errores de sintaxis
+class SyntaxError(Exception):
+    pass
+
 # Manejo de errores
 def p_error(p):
     if p:
-        print(f"Syntax error at token {p.type} ('{p.value}') on line {p.lineno}")
+        error_msg = f"Syntax error at token {p.type} ('{p.value}') on line {p.lineno}"
+        print(error_msg)
+        raise SyntaxError(error_msg)
     else:
-        print("Syntax error: Unexpected end of file (EOF)")
-    # if p:
-    #     error_msg = f"Syntax error at token {p.type} ('{p.value}') on line {p.lineno}"
-    #     print(error_msg)
-    #     raise SyntaxError(error_msg)
-    # else:
-    #     error_msg = "Syntax error: Unexpected end of file (EOF)"
-    #     print(error_msg)
-    #     raise SyntaxError(error_msg)
+        error_msg = "Syntax error: Unexpected end of file (EOF)"
+        print(error_msg)
+        raise SyntaxError(error_msg)
 
 
 # Crear el parser

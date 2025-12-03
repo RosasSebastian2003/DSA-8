@@ -21,6 +21,7 @@ class IntermediateCodeGenerator:
         self.param_counter = 0  # Contador de argumentos en llamadas a funciones
         self.call_stack = []      # Pila para manejar llamadas a funciones
         self.current_function = None  # Nombre de la funcion actual siendo procesada
+        self.debug = False
         
     # Agregar un operador a la pila
     def push_operator(self, operator):
@@ -237,19 +238,22 @@ class IntermediateCodeGenerator:
             "temp_vars": 0
         }
         
-        print(f"Funcion {func_name} registrada en direccion {start_address}")
+        if self.debug:
+            print(f"Funcion {func_name} registrada en direccion {start_address}")
     
     # Agregar un parametro a la funcion en la tabla de funciones
     def add_function_param(self, func_name, param_address, param_type):
         if func_name in self.function_table:
             self.function_table[func_name]["param_addresses"].append(param_address)
             self.function_table[func_name]["param_types"].append(param_type)
-            print(f"Parametro agregado a {func_name}: {param_address} ({param_type})")
+            if self.debug:
+                print(f"Parametro agregado a {func_name}: {param_address} ({param_type})")
             
     def end_function(self, func_name):
         # Generamos un cuadruplo ENDFUNC 
         self.add_quad(operator="ENDFUNC", arg1=None, arg2=None, result=None)
-        print(f"Funcion {func_name} finalizada")
+        if self.debug:
+            print(f"Funcion {func_name} finalizada")
         
     # Iniciamos una llamada de funcion
     # Generamos un cuadruplo ERA para reservar espacio de la memoria para llamar a la funcion
@@ -267,8 +271,8 @@ class IntermediateCodeGenerator:
         
         # Generamos un cuadruplo ERA 
         self.add_quad(operator="ERA", arg1=func_name, arg2=None, result=None)
-        
-        print(f"Llamando a la funcion: {func_name}")
+        if self.debug:      
+            print(f"Llamando a la funcion: {func_name}")
     
     # Procesamos un argumento para la llamada de la funcion
     # una vez procesado, enviamos el parametro mediante un cuadruplo PARAM
@@ -295,7 +299,8 @@ class IntermediateCodeGenerator:
         # Generamos un cuadruplo PARAM
         self.add_quad(operator="PARAM", arg1=argument_address, arg2=None, result=param_address)
         self.param_counter += 1
-        print(f"Argumento procesado para {self.current_function}: {argument_address} -> {param_address}")
+        if self.debug:
+            print(f"Argumento procesado para {self.current_function}: {argument_address} -> {param_address}")
     
     # Verificamos la llamada de la funcion    
     def verify_function_call(self, func_name, arg_count):
@@ -322,7 +327,8 @@ class IntermediateCodeGenerator:
         
         # Generamos el cuadruplo GOSUB
         self.add_quad(operator="GOSUB", arg1=func_name, arg2=None, result=start_address)
-        print(f"Llamada a funcion {func_name} finalizada, GOSUB a {start_address})")
+        if self.debug:
+            print(f"Llamada a funcion {func_name} finalizada, GOSUB a {start_address})")
         
         # Restauramos el estado previo a la llamada de funcion
         if self.call_stack:
@@ -339,17 +345,20 @@ class IntermediateCodeGenerator:
         # Llenamos el GOTO pendiente de la posicion 0 al finalizar el analisis    
         if len(self.quads) > 0 and self.quads[0][0] == 'GOTO' and self.quads[0][3] == -1:
             self.fill_quad(0, self.get_current_position())
-            print(f"Main Start: GOTO inicial apunta a {self.get_current_position()}")
+            if self.debug:
+                print(f"Main Start: GOTO inicial apunta a {self.get_current_position()}")
     
     def start_program(self):
         # Generamos un GOTO al inicio del main
         goto_pos = self.add_quad("GOTO", None, None, -1)
-        print(f"Programa iniciado: GOTO al main {goto_pos}")
+        if self.debug:
+            print(f"Programa iniciado: GOTO al main {goto_pos}")
         
     def end_program(self):
         # Generamos un cuadruplo END para finalizar el programa
         self.add_quad("END", None, None, None)
-        print("Programa finalizado: END")
+        if self.debug:
+            print("Programa finalizado: END")
     
     # Helpers
     # Llenamos las partes vacias del cuadruplo con strings vacios

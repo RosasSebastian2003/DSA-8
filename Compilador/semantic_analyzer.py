@@ -14,6 +14,7 @@ class SemanticAnalyzer:
         self.current_function = None
         self.errors = []
         self.program_name = None
+        self.debug = False
     
     def add_error(self, message, line=None):
         # Agregamos un error semantico a la lista
@@ -38,11 +39,13 @@ class SemanticAnalyzer:
     # Punto neuralgico para empezar el programa
     def np_start_program(self, program_name):
         self.program_name = program_name
-        print(f"Iniciando programa: {program_name}")
+        if self.debug:
+            print(f"Iniciando programa: {program_name}")
         
      # Iniciar con la declaracion de la funcion   
     def np_start_function(self, func_name, return_type='void'):
-        print(f"Declarando funcion: {func_name}")
+        if self.debug:
+            print(f"Declarando funcion: {func_name}")
         
         # Verificar que la funcion no este declarada
         if self.function_directory.function_exists(func_name):
@@ -57,12 +60,14 @@ class SemanticAnalyzer:
     
     # Fin de la declaracion de la funcion
     def np_end_function(self, func_name):
-        print(f"Fin de la funcion: {func_name}")
+        if self.debug:
+            print(f"Fin de la funcion: {func_name}")
         self.current_function = None
         self.function_directory.set_current_function(None)
     
     def np_add_parameter(self, param_name, param_type):
-        print(f"Agregando parametro: {param_name}:{param_type}")
+        if self.debug:
+            print(f"Agregando parametro: {param_name}:{param_type}")
         
         if self.current_function:
             func = self.function_directory.get_function(self.current_function)
@@ -77,7 +82,8 @@ class SemanticAnalyzer:
     def np_declare_variable(self, var_name, var_type, is_global=False):
         # Definimos el scope
         scope = "global" if is_global else self.current_function
-        print(f"Declarando variable: {var_name}:{var_type}, scope: {scope}")
+        if self.debug:
+            print(f"Declarando variable: {var_name}:{var_type}, scope: {scope}")
         
         success = False
         if is_global:
@@ -95,7 +101,7 @@ class SemanticAnalyzer:
         var = self.function_directory.lookup_variable(var_name)
 
         if var is None:
-            self.add_error(f"La varuable '{var_name}' no existe")
+            self.add_error(f"La variable '{var_name}' no existe")
             return None
 
         return var.var_type
@@ -114,13 +120,14 @@ class SemanticAnalyzer:
                 f"Operacion invalida: {left_operand}({left_type}) {operator} {right_operand}({right_type})"
             )
             return None
-
-        print(f"Resultado: {result_type}")
+        if self.debug:
+            print(f"Resultado: {result_type}")
         return result_type
     
     # Verificacion de asignacion
     def np_check_assignment(self, var_name, expr_type):
-        print(f"Verificando asignacion: {var_name} = <expr:{expr_type}>")
+        if self.debug:
+            print(f"Verificando asignacion: {var_name} = <expr:{expr_type}>")
         
         # Checamos si la variable existe
         var = self.function_directory.lookup_variable(var_name)
@@ -145,7 +152,8 @@ class SemanticAnalyzer:
     # Llamadas de funcion 
     # Inicio de una llamada de funcion
     def np_start_function_call(self, func_name):
-        print(f"Llamando a la funcion: {func_name}")
+        if self.debug:
+            print(f"Llamando a la funcion: {func_name}")
         
         func = self.function_directory.get_function(func_name)
         if func is None:
@@ -156,7 +164,8 @@ class SemanticAnalyzer:
     
     # Verificacion de la llamada a una funcion
     def np_check_function_call(self, func_name, argument_types):
-        print(f"Verificando llamada: {func_name}({', '.join(argument_types)})")
+        if self.debug:
+            print(f"Verificando llamada: {func_name}({', '.join(argument_types)})")
         
         func = self.function_directory.get_function(func_name)
         if func is None:
