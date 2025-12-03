@@ -247,8 +247,13 @@ def p_f_call_expr(p):
         return_address = intermediate_code_generator.get_function_return_address(func_name)
         
         if return_type and return_type != 'void' and return_address:
+            # Copiamos el resultado a una variable temporal para evitar que se sobre escriba en doble recursion
+            temp = intermediate_code_generator.add_temp()
+            temp_address = intermediate_code_generator.get_temp_address(name=temp, var_type=return_type)
+            intermediate_code_generator.add_quad(operator='=', arg1=return_address, arg2=None, result=temp_address)
+            
             # Pushear la direccion de retorno como operando
-            intermediate_code_generator.push_operand(return_address, return_type)
+            intermediate_code_generator.push_operand(temp_address, return_type)
         else:
             return_type = None
     else:

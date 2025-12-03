@@ -140,7 +140,6 @@ class VirtualMachine:
             print("Advertencia: No se encontro cuadruplo END. El programa podria no terminar correctamente.")
     
     def reset(self):
-        """Reinicia la maquina virtual"""
         self.memory = {
             'global': {},
             'local': {},
