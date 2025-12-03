@@ -1,11 +1,21 @@
-program test3;
+program factorial_recursivo;
 var
-    x, y, z : int;
+    n : int;
+    resultado : int;
+
+int factorial(x : int) [
+    {
+        if (x < 2) {
+            return 1;
+        } else {
+            return x * factorial(x - 1);
+        };
+    }
+];
+
 main {
-    x = 5 + 3/3;
-    y = x * 2;
-    z = (x + y) / 2;
-    print("Valor de z:");
-    print(z);
+    n = 5;
+    resultado = factorial(n);
+    print("El factorial de", n, "es:", resultado);
 }
 end

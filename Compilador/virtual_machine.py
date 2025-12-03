@@ -65,6 +65,15 @@ class VirtualMachine:
     def get_value(self, address):
         if address is None:
             return None
+        
+        # PRIMERO buscar en el contexto actual (para parametros y locales)
+        if self.current_context:
+            # Buscar en local del contexto
+            if address in self.current_context['local']:
+                return self.current_context['local'][address]
+            # Buscar en temp del contexto
+            if address in self.current_context['temp']:
+                return self.current_context['temp'][address]
             
         segment, var_type = self.get_segment(address)
         
@@ -76,7 +85,7 @@ class VirtualMachine:
                 # Valor por defecto segun tipo
                 return 0 if var_type in ['int', 'float'] else ""
         else:
-            # Locales y temporales estan en el contexto actual
+            # Locales y temporales
             if self.current_context and address in self.current_context[segment]:
                 return self.current_context[segment][address]
             elif address in self.memory[segment]:
@@ -98,6 +107,20 @@ class VirtualMachine:
         elif var_type == 'float' and isinstance(value, int):
             value = float(value)
         
+        # Si hay contexto y la direccion ya esta en local/temp del contexto, actualizar ahi
+        if self.current_context:
+            if address in self.current_context['local']:
+                self.current_context['local'][address] = value
+                return
+            if address in self.current_context['temp']:
+                self.current_context['temp'][address] = value
+                return
+            # Si es temporal, guardarlo en el contexto
+            if segment == 'temp':
+                self.current_context['temp'][address] = value
+                return
+        
+        # Si no hay contexto o es global/const
         if segment == 'global' or segment == 'const':
             self.memory[segment][address] = value
         else:
@@ -219,6 +242,8 @@ class VirtualMachine:
             elif operator == 'ENDFUNC':
                 self.exec_endfunc()
                 continue
+            elif operator == 'RETURN':
+                self.exec_return(arg1, result)
             elif operator == 'END':
                 self.running = False
                 continue
@@ -326,10 +351,11 @@ class VirtualMachine:
     # Pasamos un argumento al parametro de la funcion 
     def exec_param(self, arg_address, param_address):
         value = self.get_value(arg_address)
-        # Guardamos en el contexto pendiente
+        # Guardamos en el contexto pendiente como 'local'
+        # Los parametros siempre van al contexto local de la funcion
         if hasattr(self, 'pending_context'):
-            segment, _ = self.get_segment(param_address)
-            self.pending_context[segment][param_address] = value
+            # Usar 'local' para todos los parametros, independiente del rango de direccion
+            self.pending_context['local'][param_address] = value
     
     # GOSUB
     # Saltamos a la funcion y activamos el contexto
@@ -348,17 +374,23 @@ class VirtualMachine:
         self.pop_context()
         self.ip = return_address
     
+    # RETURN
+    # Asigna el valor de retorno a la variable global de la funcion
+    def exec_return(self, value_address, return_var_address):
+        value = self.get_value(value_address)
+        self.set_value(return_var_address, value)
+        if hasattr(self, 'debug') and self.debug:
+            print(f"RETURN: {value} -> direccion {return_var_address}")
+    
     # Helpers
     def print_memory_state(self):
-        """Imprime el estado actual de la memoria (para debugging)."""
-        print("\n=== Estado de Memoria ===")
+        print("\nEstado de la memoria:")
         print("Global:", self.memory['global'])
         print("Constantes:", self.memory['const'])
         if self.current_context:
             print("Contexto actual:", self.current_context['name'])
             print("  Local:", self.current_context['local'])
             print("  Temp:", self.current_context['temp'])
-        print("========================\n")
 
 
 # Singleton de la maquina virtual

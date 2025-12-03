@@ -195,6 +195,42 @@ class SemanticAnalyzer:
         
         return True
     
+    # Verificacion del tipo de return de una funcion
+    def np_check_function_return(self, func_name, return_type):
+        func = self.function_directory.get_function(func_name)
+        if func is None:
+            return False
+        
+        expected_return_type = func.return_type
+        
+        # Si la funcion es void, no deberia tener return con valor
+        if expected_return_type == 'void':
+            self.add_error(
+                f"La funcion '{func_name}' es void y no debe retornar un valor"
+            )
+            return False
+        
+        # Verificar compatibilidad de tipos
+        if return_type != expected_return_type:
+            # Permitir int -> float
+            if not (expected_return_type == 'float' and return_type == 'int'):
+                self.add_error(
+                    f"Tipo de retorno incompatible en '{func_name}': "
+                    f"se espera {expected_return_type}, se recibio {return_type}"
+                )
+                return False
+        
+        if self.debug:
+            print(f"Return verificado para {func_name}: {return_type}")
+        return True
+    
+    # Obtener el tipo de retorno de una funcion
+    def get_function_return_type(self, func_name):
+        func = self.function_directory.get_function(func_name)
+        if func:
+            return func.return_type
+        return None
+    
     # Helpers
     # Determinar el tipo de literal
     def get_literal_type(self, value):
@@ -211,4 +247,3 @@ class SemanticAnalyzer:
     def reset(self):
         # Reiniciar al analizador
         self.__init__()
-

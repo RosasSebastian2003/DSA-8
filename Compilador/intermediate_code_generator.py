@@ -224,8 +224,16 @@ class IntermediateCodeGenerator:
             self.pop_operator()
     
     # Declaracion de funciones - registrar en tabla
-    def register_function(self, func_name):
+    def register_function(self, func_name, return_type='void'):
         start_address = self.get_current_position()
+        
+        # Si la funcion tiene tipo de retorno (no void), crear variable global para el valor de retorno
+        return_var_address = None
+        if return_type != 'void':
+            # Crear variable global con el nombre de la funcion para almacenar el retorno
+            return_var_address = excecution_memory.add_variable(func_name, return_type, scope='global')
+            if self.debug:
+                print(f"Variable de retorno creada para {func_name}: {return_var_address} ({return_type})")
         
         # Registramos a la funcion en la tabla de funciones junto con sus recursos
         # Almacenamos la cantidad de variables locales y temporales que utiliza la funcion 
@@ -235,11 +243,13 @@ class IntermediateCodeGenerator:
             "param_addresses": [],
             "param_types": [],
             "local_vars": 0,
-            "temp_vars": 0
+            "temp_vars": 0,
+            "return_type": return_type,
+            "return_var_address": return_var_address  # Direccion de la variable global para el retorno
         }
         
         if self.debug:
-            print(f"Funcion {func_name} registrada en direccion {start_address}")
+            print(f"Funcion {func_name} registrada en direccion {start_address} (retorno: {return_type})")
     
     # Agregar un parametro a la funcion en la tabla de funciones
     def add_function_param(self, func_name, param_address, param_type):
@@ -374,6 +384,37 @@ class IntermediateCodeGenerator:
     # Obtenemos la informacion de una funcion
     def get_function_info(self, func_name):
         return self.function_table.get(func_name)
+    
+    # Obtiene la direccion de la variable global donde se guarda el valor de return de la funcion
+    def get_function_return_address(self, func_name):
+        func_info = self.function_table.get(func_name)
+        if func_info:
+            return func_info.get("return_var_address")
+        return None
+    
+    # Obtenemos el tipo de retorno de la funcion
+    def get_function_return_type(self, func_name):
+        func_info = self.function_table.get(func_name)
+        if func_info:
+            return func_info.get("return_type")
+        return None
+
+    # Genera un cuadruplo RETURN para la funcion actual donde se asigna el valor a la variable global de retorno
+    def generate_return(self, func_name, return_value_address):
+        func_info = self.function_table.get(func_name)
+        if func_info is None:
+            print(f"Error: Funcion {func_name} no encontrada")
+            return
+        
+        return_var_address = func_info.get("return_var_address")
+        if return_var_address is None:
+            print(f"Error: La funcion {func_name} es void y no puede retornar un valor")
+            return
+        
+        # Generamos cuadruplo RETURN: asigna el valor a la variable global
+        self.add_quad(operator="RETURN", arg1=return_value_address, arg2=None, result=return_var_address)
+        if self.debug:
+            print(f"Return generado: {return_value_address} -> {return_var_address} ({func_name})")
         
     def print_quads(self):
         if not self.quads:

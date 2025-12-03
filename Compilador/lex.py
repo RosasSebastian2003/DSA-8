@@ -14,6 +14,7 @@ reserved_namespace = {
     'print' : 'PRINT',
     'main' : 'MAIN',
     'end' : 'END',
+    'return' : 'RETURN',
 }
 
 # Listar los nombres de los tokens 
