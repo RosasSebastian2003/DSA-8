@@ -25,18 +25,6 @@ class VirtualMachine:
         
         # Flag para detener la ejecucion
         self.running = False
-        
-        self.address_ranges = {
-            'global_int': (1000, 1999),
-            'global_float': (2000, 2999),
-            'local_int': (3000, 3999),
-            'local_float': (4000, 4999),
-            'temp_int': (5000, 5999),
-            'temp_float': (6000, 6999),
-            'const_int': (7000, 7999),
-            'const_float': (8000, 8999),
-            'const_string': (9000, 9999)
-        }
     
     # Determina el segmento de memoria basado en la direccion virtual
     def get_segment(self, address):
@@ -94,7 +82,6 @@ class VirtualMachine:
             else:
                 return 0 if var_type in ['int', 'float'] else ""
     
-    
     def set_value(self, address, value):
         if address is None:
             return
@@ -146,6 +133,7 @@ class VirtualMachine:
             'temp': {},
             'const': {}
         }
+        
         self.execution_stack = []
         self.current_context = None
         self.ip = 0
@@ -167,6 +155,7 @@ class VirtualMachine:
             'temp': {},
             'return_address': self.ip  # Donde regresar despues de la llamada
         }
+        
         return context
     
     def push_context(self, context):
@@ -305,7 +294,6 @@ class VirtualMachine:
     
     # Asignacion
     def exec_assign(self, arg1, result):
-        """Asignacion: result = arg1"""
         val = self.get_value(arg1)
         self.set_value(result, val)
     
@@ -314,16 +302,15 @@ class VirtualMachine:
     def exec_goto(self, target):
         self.ip = target
     
-    # GOTOF
+    # GOTOF, cambia el instruction pointer al siguiente cuadruplo si la condicion es falsa (0)
     def exec_gotof(self, condition, target):
-        """Salto si falso (condicion == 0)"""
         val = self.get_value(condition)
         if val == 0:
             self.ip = target
             return True
         return False
     
-    # GOTOT
+    # GOTOT, cambia el instruction pointer al siguiente cuadruplo si la condicion es verdadera (1)
     def exec_gotot(self, condition, target):
         val = self.get_value(condition)
         if val != 0:
@@ -350,10 +337,10 @@ class VirtualMachine:
     # Pasamos un argumento al parametro de la funcion 
     def exec_param(self, arg_address, param_address):
         value = self.get_value(arg_address)
-        # Guardamos en el contexto pendiente como 'local'
+        # Guardamos en el contexto pendiente como local
         # Los parametros siempre van al contexto local de la funcion
         if hasattr(self, 'pending_context'):
-            # Usar 'local' para todos los parametros, independiente del rango de direccion
+            # Usar local para todos los parametros, independiente del rango de direccion
             self.pending_context['local'][param_address] = value
     
     # GOSUB

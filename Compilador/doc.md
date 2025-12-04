@@ -1192,3 +1192,329 @@ def push_operand(self, operand, operand_type):
 ```
 ### Diagramas con los Cuadruplos Representados 
 ![Diagrama de la topologia](cuadruplos-topologia.png)
+
+## Maquina Virtual 
+
+A continuacion se explicara el funcionamiento de la maquina virtual, su funcionalidad esta encapsulada en una clase la cual recibe a los cuadruplos desde el generador de codigo intermedio, y a las constantes desde la memoria de ejecucion. 
+
+La clase se forma de los siguientes atributos:
+1. **self.memory:** Este es uno diccionario de diccionarios donde las llaves de los primeros diccionarios representan al alcance de la variiable (global, local, temporal, constante), y el valor para estas llaves son diccionarios que guardan a como llave a las direcciones de las variables, y como valor al valor de dicha variable, esta vez las variables no estan separadas por tipos como lo estaban en la memoria de ejecucion.
+El diccionario empieza vacio:
+
+```python
+self.memory = {
+    'global': {},      # Variables globales (1000-2999)
+    'local': {},       # Variables locales (3000-4999) - por contexto
+    'temp': {},        # Temporales (5000-6999) - por contexto
+    'const': {}        # Constantes (7000-9999)
+}
+```
+
+Conforme guardamos las constantes, nuestro diccionario muta de la siguiente manera:
+
+```python
+self.memory = {
+    'global': {
+        1000: 10,
+        1001: 20,           # y (dirección 1001, tipo int)
+        2000: 15.0          # resultado (dirección 2000, tipo float)
+    },
+    
+    'local': {
+        # Variables locales como parametros de funciones, salidas de funciones, y variables definidas dentro de ciclos y estatudos de control
+        3000: 10,           
+        3001: 20,           
+        3002: 30           
+    },
+    
+    'temp': {
+        # Variables temporales
+        5000: 30,
+        6000: 15.0          
+    },
+    
+    'const': {
+        # Valores numericos y strings
+        7000: 2,           
+        9000: "Promedio de",
+        9001: "y",
+        9002: "es:"
+    }
+}
+```
+
+2. **self.excecution_stack:** Esta pila almacena los contextos de ejecucion para las llamadas de funcion, donde cada vez que entramos a una funcion, agregamos contexto a una pila, y cuando la funcion termina, sacamos su contexto y volvemos al anterior. Un contexto se ve de la siguiente manera:
+
+```python
+{
+    'name': 'nombre_funcion',        # Nombre de la función
+    'local': {},                     # Variables locales (3000-3999, 4000-4999)
+    'temp': {},                      # Variables temporales (5000-6999)
+    'return_address': 25             # GOTO
+}
+```
+
+3. **self.current_context:** Representa al contexto activo, si es None, significa que estamos en main, por lo que no hay funciones activas, cada contexto tiene sus propias variabes locales y temporales separadas
+
+4. **self.ip:** Es el indice del cuadruplo actual qie se esta ejecutando, lo incrementamos despues de cada cuadruplo a excepcion de cuando hay saltos
+
+5. **self.quads:** La lista de instrucciones que se deben de ejecutar
+
+6. **self.function_directory:** Almacena la indormacion de todas las funciones del programa 
+
+7. **self.running:** Esta flag indica si la maquina virtual debe de seguir ejecutandom cambia a false cuando se llega al cuadruplo end
+
+### Metodos
+
+**def get_segment(self, address):** Recibe una direccion virtual y determina el segmento de memoria al que pertenece, como retorno arroja una tupla con el segmento y el tipo de dato que corresponden a la direccion de memoria, esto permite saber donde buscar o guardar un valor
+
+```Python
+    # Determina el segmento de memoria basado en la direccion virtual
+    def get_segment(self, address):
+        if 1000 <= address <= 1999:
+            return 'global', 'int'
+        elif 2000 <= address <= 2999:
+            return 'global', 'float'
+        elif 3000 <= address <= 3999:
+            return 'local', 'int'
+        elif 4000 <= address <= 4999:
+            return 'local', 'float'
+        elif 5000 <= address <= 5999:
+            return 'temp', 'int'
+        elif 6000 <= address <= 6999:
+            return 'temp', 'float'
+        elif 7000 <= address <= 7999:
+            return 'const', 'int'
+        elif 8000 <= address <= 8999:
+            return 'const', 'float'
+        elif 9000 <= address <= 9999:
+            return 'const', 'string'
+        else:
+            raise RuntimeError(f"Direccion de memoria invalida: {address}") 
+```
+
+**def get_value(self, address):** Lee un valor desde una direccion virtual, primero se busca en el contexto actual, y luego en la memoria global
+
+```Python 
+    # Obtener el valor almacenado en una direccion virtual
+    def get_value(self, address):
+        if address is None:
+            return None
+        
+        # PRIMERO buscar en el contexto actual (para parametros y locales)
+        if self.current_context:
+            # Buscar en local del contexto
+            if address in self.current_context['local']:
+                return self.current_context['local'][address]
+            # Buscar en temp del contexto
+            if address in self.current_context['temp']:
+                return self.current_context['temp'][address]
+            
+        segment, var_type = self.get_segment(address)
+        
+        if segment == 'global' or segment == 'const':
+            # Variables globales y constantes estan en memoria principal
+            if address in self.memory[segment]:
+                return self.memory[segment][address]
+            else:
+                # Valor por defecto segun tipo
+                return 0 if var_type in ['int', 'float'] else ""
+        else:
+            # Locales y temporales
+            if self.current_context and address in self.current_context[segment]:
+                return self.current_context[segment][address]
+            elif address in self.memory[segment]:
+                # Fallback a memoria principal (para main)
+                return self.memory[segment][address]
+            else:
+                return 0 if var_type in ['int', 'float'] else ""
+```
+
+**def set_value(self, address, value):** Escribe un valor en una direccion virtual, si hay un contexto activo y la direccion esta dentro de las variables del contexto, escribe ahi dentro, si no, escribe en la memoria global.
+
+```Python
+    def set_value(self, address, value):
+        if address is None:
+            return
+            
+        segment, var_type = self.get_segment(address)
+        
+        # Conversion de tipo si es necesario
+        if var_type == 'int' and isinstance(value, float):
+            value = int(value)
+        elif var_type == 'float' and isinstance(value, int):
+            value = float(value)
+        
+        # Si hay contexto y la direccion ya esta en local/temp del contexto, actualizar ahi
+        if self.current_context:
+            if address in self.current_context['local']:
+                self.current_context['local'][address] = value
+                return
+            if address in self.current_context['temp']:
+                self.current_context['temp'][address] = value
+                return
+            # Si es temporal, guardarlo en el contexto
+            if segment == 'temp':
+                self.current_context['temp'][address] = value
+                return
+        
+        # Si no hay contexto o es global/const
+        if segment == 'global' or segment == 'const':
+            self.memory[segment][address] = value
+        else:
+            if self.current_context:
+                self.current_context[segment][address] = value
+            else:
+                self.memory[segment][address] = value
+```
+
+**def load_quads(self, quads):** Recibe a los cuadruplos y los guarda en self.quads, luego coloca al instruction pointer en 0
+
+```Python
+    def load_quads(self, quads):
+        # Cargamos los cuadruplos a ejecutar
+        self.quads = quads
+        self.ip = 0
+        
+        # Verificar que exista el cuadruplo END
+        has_end = any(q[0] == 'END' for q in quads)
+        if not has_end and len(quads) > 0:
+            print("Advertencia: No se encontro cuadruplo END. El programa podria no terminar correctamente.")
+```
+
+**def load_constants(self, const_dict):** Recibe a las constantes desde la memoria de ejecucion y los almacena en el diccionario de const dentro de self.memory
+
+```Python
+    # Cargamos las constantes del compilador a la memoria
+    def load_constants(self, const_dict):
+        for (value, _), address in const_dict.items():
+            self.memory['const'][address] = value
+```
+
+**def create_context(self, func_name):** Recibe al nombre de la funcion y retorna un contexto de ejecucion para la funcion, este contexto estaria pendiente hasta que se ejecute el cuadruplo GOSUB
+
+```Python
+    # Crea un nuevo contexto de ejecucion para una llamada a funcion
+    def create_context(self, func_name):
+        context = {
+            'name': func_name,
+            'local': {},
+            'temp': {},
+            'return_address': self.ip  # Donde regresar despues de la llamada
+        }
+
+        return context
+```
+
+**push y pop context:** Push context activa al contexto recibido, y si hay un contexto actual, mete al contexto actual dentro de la pila de ejecucion, pop context saca un contexto de la pila de ejecucion y lo establece como el contexto actual, si la pila esta vacia, cambia el contexto actual a none, lo que nos regresa a main
+
+```Python
+    def push_context(self, context):
+        # Guarda el contexto actual y activa el nuevo
+        if self.current_context:
+            self.execution_stack.append(self.current_context)
+        self.current_context = context
+    
+    def pop_context(self):
+        # Restaura el contexto anterior
+        if self.execution_stack:
+            self.current_context = self.execution_stack.pop()
+        else:
+            self.current_context = None
+```
+
+**def execute(self):** Ejecuta a los cuadruplos de uno por uno usando el instruction pointer, lee cada cuadruplo, identifica al operador y llama a la funcion correspondiente, esta desicion se lleva acabo mediante un switch
+
+```Python
+    def execute(self):
+        # Ejecuta los cuadruplos cargados
+        self.running = True
+        self.ip = 0
+        
+        # Proteccion contra loops infinitos
+        max_iterations = 100000
+        iteration_count = 0
+        
+        while self.running and self.ip < len(self.quads):
+            iteration_count += 1
+            if iteration_count > max_iterations:
+                print(f"\nError: Posible loop infinito detectado despues de {max_iterations} iteraciones")
+                print(f"IP actual: {self.ip}, Cuadruplo: {self.quads[self.ip]}")
+                break
+                
+            quad = self.quads[self.ip]
+            operator, arg1, arg2, result = quad
+            
+            # Dispatch de operaciones
+            if operator == '+':
+                self.exec_add(arg1, arg2, result)
+            elif operator == '-':
+                self.exec_sub(arg1, arg2, result)
+            elif operator == '*':
+                self.exec_mult(arg1, arg2, result)
+            elif operator == '/':
+                self.exec_div(arg1, arg2, result)
+            elif operator == '=':
+                self.exec_assign(arg1, result)
+            elif operator == '>':
+                self.exec_greater(arg1, arg2, result)
+            elif operator == '<':
+                self.exec_less(arg1, arg2, result)
+            elif operator == '!=':
+                self.exec_not_equal(arg1, arg2, result)
+            elif operator == 'GOTO':
+                self.exec_goto(result)
+                continue  # No incrementar instruction pointer
+            elif operator == 'GOTOF':
+                if self.exec_gotof(arg1, result):
+                    continue  # Salto realizado, no incrementar instruction pointer
+            elif operator == 'GOTOT':
+                if self.exec_gotot(arg1, result):
+                    continue
+            elif operator == 'PRINT':
+                self.exec_print(arg1)
+            elif operator == 'UMINUS':
+                self.exec_uminus(arg1, result)
+            elif operator == 'ERA':
+                self.exec_era(arg1)
+            elif operator == 'PARAM':
+                self.exec_param(arg1, result)
+            elif operator == 'GOSUB':
+                self.exec_gosub(arg1, result)
+                continue  # El IP se maneja en gosub
+            elif operator == 'ENDFUNC':
+                self.exec_endfunc()
+                continue
+            elif operator == 'RETURN':
+                self.exec_return(arg1, result)
+            elif operator == 'END':
+                self.running = False
+                continue
+            else:
+                print(f"Operador desconocido: {operator}")
+            
+            self.ip += 1
+```
+
+Los metodos para las operaciones aritmeticas y relacionales son practicamente iguales, reciben los mismos argumentos, los cuales son las direcciones de memoria de los argumentos 1 y 2 del cuadruplo, y la direccion del resultado, utilizamos a la funcion get_value para obtener los valores asociados a las direcciones de memoria de los argumentos, y luego usamos a la funcion set_value para asignarle el resultado de la operacion a la direccion de memoria del resultado del cuadruplo.
+Las unicas operaciones que son distintas son la division y la aplicacion del menos unario ya que la division valida que el valor que se vaya a dividir no sea 0, y el menos unario solo vuelve negativo al segundo argumento; A continuacion se enlistan las declaraciones de los metodos aritmeticos:
+
+```Python
+    # Operaciones aritmeticas
+    # result = arg1 + arg2
+    def exec_add(self, arg1, arg2, result):
+    
+    # Resta: result = arg1 - arg2
+    def exec_sub(self, arg1, arg2, result):
+    
+     # Multiplicacion: result = arg1 * arg2
+    def exec_mult(self, arg1, arg2, result):
+    
+    # result = arg1 / arg2
+    def exec_div(self, arg1, arg2, result):
+    
+    # Menos unario: result = -arg1
+    def exec_uminus(self, arg1, result):
+```
+
+Las 

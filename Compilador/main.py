@@ -62,7 +62,7 @@ class Compiler:
         self.intermediate_code_generator.debug = True
     
     def run(self):
-        # Cargar cuádruplos (usar 'quads', no 'quadruples')
+        # Cargar cuadruplos
         self.virtual_machine.load_quads(self.intermediate_code_generator.quads)
         self.virtual_machine.load_constants(self.excecution_memory.const_dict)
         
