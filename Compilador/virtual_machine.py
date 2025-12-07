@@ -331,7 +331,7 @@ class VirtualMachine:
     # Preparamos el espacio de memora para la funcion y creamos un nuevo contexto de ejecucion
     def exec_era(self, func_name):
         context = self.create_context(func_name)
-        # Guardamos el contexto pendiente (se activara en GOSUB)
+        # Guardamos el contexto pendiente, se activara con GOSUB
         self.pending_context = context
     
     # Pasamos un argumento al parametro de la funcion 
@@ -339,7 +339,7 @@ class VirtualMachine:
         value = self.get_value(arg_address)
         # Guardamos en el contexto pendiente como local
         # Los parametros siempre van al contexto local de la funcion
-        if hasattr(self, 'pending_context'):
+        if hasattr(self, 'pending_context'): # Revisamos que el atributo exista
             # Usar local para todos los parametros, independiente del rango de direccion
             self.pending_context['local'][param_address] = value
     
@@ -361,9 +361,10 @@ class VirtualMachine:
         self.ip = return_address
     
     # RETURN
-    # Asigna el valor de retorno a la variable global de la funcion
+    # Asigna el valor de retorno a la variable local de la funcion
     def exec_return(self, value_address, return_var_address):
         value = self.get_value(value_address)
+        
         self.set_value(return_var_address, value)
         if hasattr(self, 'debug') and self.debug:
             print(f"RETURN: {value} -> direccion {return_var_address}")

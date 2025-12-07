@@ -637,34 +637,6 @@ El cubo semantico proporciona dos metodos principales:
 
 El analizador semantico usa al cubo semantico con las estructuras de datos para realizar validacion semantica del programa durante el parseo. Contiene referencias al directorio de funciones, la funcion actual siendo analizada, y una lista con los errores encontrados.
 
-#### Puntos Neuralgicos - Inicializacion y Funciones
-
-El punto neuralgico np_start_program cprre cuando se reconoce la declaracion del programa (program ID;) e inicializa el analisis estableciendo el nombre del programa.
-
-El punto neuralgico np_start_function corre cuando comienza la declaracion de una funcion verificando que no este doblemente declarada, creandola en el directorio, y estableciendo que todos los elementos siguientes pertenecen a esa funcion hasta que termine.
-
-El punto neuralgico np_end_function corre cuando finaliza la declaracion de una funciony arroja el ambito al global.
-
-El punto neuralgico np_add_parameter se ejecuta para cada parametro en la lista de parametros validando que no este doblemente declarado y agregandolo como variable local de la funcion.
-
-#### Puntos Neuralgicos - Variables
-
-El punto neuralgico np_declare_variable se ejecuta al reconocer una declaracion de variable (ID : type;). Valida que la variable no este doblemente declarada en el ambito actual y la agrega a la tabla global si es variable global, o a la tabla local de la funcion actual si es local.
-
-El punto neuralgico np_check_variable se ejecuta cuando se usa una variable en una expresion, busca la variable en el scope actual implementando la regla que las variables locales ocultan las globales, luego arroja al tipo de la variable si existe.
-
-#### Puntos Neuralgicos - Operaciones
-
-El punto neuralgico np_check_operation corre cuando se completa una operacion binaria, consulta el cubo semantico para obtener el tipo resultante y registra un error si la operacion no es valida, el tipo resultante se almacena para su uso.
-
-El punto neuralgico np_check_assignment corre cuando se completa una asignacion (ID = expression;), este verifica que la variable exista, obtiene su tipo, consulta el cubo semantico con el operador = para validar que el tipo de la expresion sea compatible con el tipo de la variable, y registra error si no lo es.
-
-#### Puntos Neuralgicos - Llamadas a Funcion
-
-El punto neuralgico np_start_function_call corre cuando comienza una llamada a funcion verificando que la funcion este declarada y obteniendo su informacion.
-
-El punto neuralgico np_check_function_call corre al completar una llamada a funcion, valida que el numero de argumentos sea correcto, que cada tipo de argumento sea compatible con el tipo del parametro correspondiente, y registra errores especificos indicando cual argumento es incompatible.
-
 #### Helpers
 
 El metodo get_literal_type determina si un valor es entero o flotante basandose en el tipo de Python, el metodo print_symbol_tables imprime todas las tablas de simbolos tanto globales como de cada funcion para debugging, por ultomo, el metodo reset reinicia el analizador para evitar interferencias con programas anteriores.
@@ -1190,6 +1162,374 @@ def push_operand(self, operand, operand_type):
         self.add_quad("END", None, None, None)
         print("Programa finalizado: END")
 ```
+
+21. np_start_program(): Inicializa el análisis al reconocer la declaración del programa
+```python
+def np_start_program(self, program_name):
+    self.program_name = program_name
+    if self.debug:
+        print(f"Iniciando programa: {program_name}")
+```
+
+22. np_start_function(): Crea una función en el directorio y establece el scope actual
+```python
+def np_start_function(self, func_name, return_type='void'):
+    if self.debug:
+        print(f"Declarando funcion: {func_name}")
+    
+    # Verificar que la funcion no este declarada
+    if self.function_directory.function_exists(func_name):
+        self.add_error(f"La funcion '{func_name}' ya fue declarada")
+        return False
+    
+    # Agregamos a la funcion al directorio
+    self.function_directory.add_function(func_name, return_type)
+    self.function_directory.set_current_function(func_name)
+    self.current_function = func_name
+    return True
+```
+
+23. np_end_function(): Finaliza el análisis de una función y retorna al scope global
+```python
+def np_end_function(self, func_name):
+    if self.debug:
+        print(f"Fin de la funcion: {func_name}")
+    self.current_function = None
+    self.function_directory.set_current_function(None)
+```
+
+24. np_add_parameter(): Agrega cada parámetro a la tabla de variables locales de la función
+```python
+def np_add_parameter(self, param_name, param_type):
+    if self.debug:
+        print(f"Agregando parametro: {param_name}:{param_type}")
+    
+    if self.current_function:
+        func = self.function_directory.get_function(self.current_function)
+        if func:
+            if not func.add_parameter(param_name, param_type):
+                self.add_error(
+                    f"Parametro '{param_name}' doblemente declarado en función '{self.current_function}'"
+                )
+```
+
+25. np_declare_variable(): Valida y registra una variable en el scope actual (global o local)
+```python
+def np_declare_variable(self, var_name, var_type, is_global=False):
+    # Definimos el scope
+    scope = "global" if is_global else self.current_function
+    if self.debug:
+        print(f"Declarando variable: {var_name}:{var_type}, scope: {scope}")
+    
+    success = False
+    if is_global:
+        success = self.function_directory.add_global_variable(var_name, var_type)
+    else:
+        success = self.function_directory.add_local_variable(var_name, var_type)
+    
+    if not success:
+        self.add_error(
+            f"La varuble '{var_name}' ya fue declarada, scope: {scope}"
+        )
+```
+
+26. np_check_variable(): Busca una variable y retorna su tipo, registra error si no existe
+```python
+def np_check_variable(self, var_name):
+    var = self.function_directory.lookup_variable(var_name)
+
+    if var is None:
+        self.add_error(f"La variable '{var_name}' no existe")
+        return None
+
+    return var.var_type
+```
+
+27. np_check_operation(): Valida una operación binaria usando el cubo semántico
+```python
+def np_check_operation(self, operator, left_operand, right_operand, left_type, right_type):
+    if left_type is None or right_type is None:
+        return None
+
+    result_type = semantic_cube.get_result_type(operator, left_type, right_type)
+
+    if result_type is None:
+        self.add_error(
+            f"Operacion invalida: {left_operand}({left_type}) {operator} {right_operand}({right_type})"
+        )
+        return None
+    if self.debug:
+        print(f"Resultado: {result_type}")
+    return result_type
+```
+
+28. np_check_assignment(): Valida compatibilidad de tipos en una asignación
+```python
+def np_check_assignment(self, var_name, expr_type):
+    if self.debug:
+        print(f"Verificando asignacion: {var_name} = <expr:{expr_type}>")
+    
+    # Checamos si la variable existe
+    var = self.function_directory.lookup_variable(var_name)
+    if var is None:
+        self.add_error(f"La variable '{var_name}' no existe ")
+        return False
+    
+    var_type = var.var_type
+    
+    # Verificar que los tipos sean compatibles mediante el cubo semantico
+    result_type = semantic_cube.get_result_type('=', var_type, expr_type)
+    
+    if result_type is None:
+        self.add_error(
+            f"Tipo incompatible: no se puede asignar {expr_type} a {var_type}"
+        )
+        return False
+    
+    return True
+```
+
+29. np_start_function_call(): Verifica que una función exista antes de llamarla
+```python
+def np_start_function_call(self, func_name):
+    if self.debug:
+        print(f"Llamando a la funcion: {func_name}")
+    
+    func = self.function_directory.get_function(func_name)
+    if func is None:
+        self.add_error(f"La funcion '{func_name}' no existe")
+        return None
+    
+    return func
+```
+
+30. np_check_function_call(): Valida el número y tipos de argumentos en una llamada a función
+```python
+def np_check_function_call(self, func_name, argument_types):
+    if self.debug:
+        print(f"Verificando llamada: {func_name}({', '.join(argument_types)})")
+    
+    func = self.function_directory.get_function(func_name)
+    if func is None:
+        return False
+    
+    expected_types = func.get_parameter_types()
+    
+    # Verificar número de argumentos
+    if len(argument_types) != len(expected_types):
+        self.add_error(
+            f"Numero incorrecto de argumentos en la funcion '{func_name}': "
+            f"se esperan {len(expected_types)} pero se recibieron {len(argument_types)}"
+        )
+        return False
+    
+    # Verificar los tipos de los argumentos
+    for i, (arg_type, expected_type) in enumerate(zip(argument_types, expected_types)):
+        if arg_type != expected_type:
+            # Verificar si hay conversiones validas
+            if not (expected_type == 'float' and arg_type == 'int'):
+                self.add_error(
+                    f"Tipo incorrecto para el argumento {i+1} para la funcion '{func_name}': "
+                    f"se espera {expected_type}, se recibio {arg_type}"
+                )
+                return False
+    
+    return True
+```
+
+31. np_check_function_return(): Valida que el tipo de retorno sea compatible con la declaración
+```python
+def np_check_function_return(self, func_name, return_type):
+    func = self.function_directory.get_function(func_name)
+    if func is None:
+        return False
+    
+    expected_return_type = func.return_type
+    
+    # Si la funcion es void, no deberia tener return con valor
+    if expected_return_type == 'void':
+        self.add_error(
+            f"La funcion '{func_name}' es void y no debe retornar un valor"
+        )
+        return False
+    
+    # Verificar compatibilidad de tipos
+    if return_type != expected_return_type:
+        # Permitir int -> float
+        if not (expected_return_type == 'float' and return_type == 'int'):
+            self.add_error(
+                f"Tipo de retorno incompatible en '{func_name}': "
+                f"se espera {expected_return_type}, se recibio {return_type}"
+            )
+            return False
+    
+    return True
+```
+
+32. register_function(): Registra una función en la tabla de funciones y crea variable global para retorno
+```python
+def register_function(self, func_name, return_type='void'):
+    start_address = self.get_current_position()
+    
+    # Si la funcion tiene tipo de retorno (no void), crear variable global para el valor de retorno
+    return_var_address = None
+    if return_type != 'void':
+        # Crear variable global con el nombre de la funcion para almacenar el retorno
+        return_var_address = excecution_memory.add_variable(func_name, return_type, scope='global')
+        if self.debug:
+            print(f"Variable de retorno creada para {func_name}: {return_var_address} ({return_type})")
+    
+    # Registramos a la funcion en la tabla de funciones junto con sus recursos
+    self.function_table[func_name] = {
+        "start_address": start_address,
+        "param_addresses": [],
+        "param_types": [],
+        "local_vars": 0,
+        "temp_vars": 0,
+        "return_type": return_type,
+        "return_var_address": return_var_address
+    }
+```
+
+33. add_function_param(): Agrega un parámetro a la tabla de funciones
+```python
+def add_function_param(self, func_name, param_address, param_type):
+    if func_name in self.function_table:
+        self.function_table[func_name]["param_addresses"].append(param_address)
+        self.function_table[func_name]["param_types"].append(param_type)
+        if self.debug:
+            print(f"Parametro agregado a {func_name}: {param_address} ({param_type})")
+```
+
+34. end_function(): Genera cuádruplo ENDFUNC para terminar declaración de función
+```python
+def end_function(self, func_name):
+    # Generamos un cuadruplo ENDFUNC 
+    self.add_quad(operator="ENDFUNC", arg1=None, arg2=None, result=None)
+    if self.debug:
+        print(f"Funcion {func_name} finalizada")
+```
+
+35. begin_function_call(): Genera cuádruplo ERA para reservar espacio de memoria para la llamada
+```python
+def begin_function_call(self, func_name):
+    if self.current_function is not None:
+        self.call_stack.append({
+            "function_name": self.current_function,
+            "param_counter": self.param_counter,
+            "arguments": self.argument_stack.copy()
+        })
+        self.argument_stack = []
+        
+    self.current_function = func_name
+    self.param_counter = 0
+    
+    # Generamos un cuadruplo ERA 
+    self.add_quad(operator="ERA", arg1=func_name, arg2=None, result=None)
+    if self.debug:      
+        print(f"Llamando a la funcion: {func_name}")
+```
+
+36. process_function_argument(): Procesa un argumento y genera cuádruplo PARAM
+```python
+def process_function_argument(self, argument_address, argument_type):
+    if self.current_function is None:
+        print("Error: No se puede procesar un argumento si no hay una funcion activa")
+        return
+    
+    # Comprobamos que la funcion exista en la tabla de funciones
+    func_info = self.function_table.get(self.current_function)
+    if func_info is None:
+        print(f"Error: La funcion {self.current_function} no existe en la tabla de funciones")
+        return
+        
+    # Verificamos que la cantidad de argumentos no exceda a la cantidad de parametros esperados
+    expected_params = len(func_info["param_addresses"])
+    if self.param_counter >= expected_params:
+        print(f"Error: Demasiados argumentos para la funcion {self.current_function}")
+        return
+    
+    # Obtenemos la direccion del parametro correspondiente 
+    param_address = func_info["param_addresses"][self.param_counter]
+    
+    # Generamos un cuadruplo PARAM
+    self.add_quad(operator="PARAM", arg1=argument_address, arg2=None, result=param_address)
+    self.param_counter += 1
+```
+
+37. end_function_call(): Genera cuádruplo GOSUB para saltar a la función
+```python
+def end_function_call(self, func_name):
+    # Generamos un cuadruplo GOSUB para saltar a la funcion
+    func_info = self.function_table.get(func_name)
+    
+    if func_info is None:
+        print(f"Error: La funcion {func_name} no existe en la tabla de funciones")
+        return 
+    
+    start_address = func_info["start_address"]
+    
+    # Generamos el cuadruplo GOSUB
+    self.add_quad(operator="GOSUB", arg1=func_name, arg2=None, result=start_address)
+    
+    # Restauramos el estado previo a la llamada de funcion
+    if self.call_stack:
+        saved_state = self.call_stack.pop()
+        self.current_function = saved_state["function_name"]
+        self.param_counter = saved_state["param_counter"]
+        self.argument_stack = saved_state["arguments"]
+    else:
+        self.current_function = None
+        self.param_counter = 0
+        self.argument_stack = [] 
+```
+
+38. generate_return(): Genera cuádruplo RETURN para asignar valor a variable global de retorno
+```python
+def generate_return(self, func_name, return_value_address):
+    func_info = self.function_table.get(func_name)
+    if func_info is None:
+        print(f"Error: Funcion {func_name} no encontrada")
+        return
+    
+    return_var_address = func_info.get("return_var_address")
+    if return_var_address is None:
+        print(f"Error: La funcion {func_name} es void y no puede retornar un valor")
+        return
+    
+    # Generamos cuadruplo RETURN: asigna el valor a la variable global
+    self.add_quad(operator="RETURN", arg1=return_value_address, arg2=None, result=return_var_address)
+```
+
+39. start_program(): Genera GOTO inicial al main (pendiente de llenar)
+```python
+def start_program(self):
+    # Generamos un GOTO al inicio del main
+    goto_pos = self.add_quad("GOTO", None, None, -1)
+    if self.debug:
+        print(f"Programa iniciado: GOTO al main {goto_pos}")
+```
+
+40. begin_main(): Llena el GOTO pendiente para saltar al inicio de main
+```python
+def begin_main(self):
+    # Llenamos el GOTO pendiente de la posicion 0 al finalizar el analisis    
+    if len(self.quads) > 0 and self.quads[0][0] == 'GOTO' and self.quads[0][3] == -1:
+        self.fill_quad(0, self.get_current_position())
+        if self.debug:
+            print(f"Main Start: GOTO inicial apunta a {self.get_current_position()}")
+```
+
+41. end_program(): Genera cuádruplo END para finalizar el programa
+```python
+def end_program(self):
+    # Generamos un cuadruplo END para finalizar el programa
+    self.add_quad("END", None, None, None)
+    if self.debug:
+        print("Programa finalizado: END")
+```
+
+
 ### Diagramas con los Cuadruplos Representados 
 ![Diagrama de la topologia](cuadruplos-topologia.png)
 
@@ -1497,7 +1837,8 @@ self.memory = {
 ```
 
 Los metodos para las operaciones aritmeticas y relacionales son practicamente iguales, reciben los mismos argumentos, los cuales son las direcciones de memoria de los argumentos 1 y 2 del cuadruplo, y la direccion del resultado, utilizamos a la funcion get_value para obtener los valores asociados a las direcciones de memoria de los argumentos, y luego usamos a la funcion set_value para asignarle el resultado de la operacion a la direccion de memoria del resultado del cuadruplo.
-Las unicas operaciones que son distintas son la division y la aplicacion del menos unario ya que la division valida que el valor que se vaya a dividir no sea 0, y el menos unario solo vuelve negativo al segundo argumento; A continuacion se enlistan las declaraciones de los metodos aritmeticos:
+
+Las unicas operaciones que son distintas son la asignacion, division y la aplicacion del menos unario ya que la asignacion solo asigna un argumento a una direccion, la division valida que el valor que se vaya a dividir no sea 0, y el menos unario solo vuelve negativo al segundo argumento; A continuacion se enlistan las declaraciones de los metodos aritmeticos:
 
 ```Python
     # Operaciones aritmeticas
@@ -1517,4 +1858,259 @@ Las unicas operaciones que son distintas son la division y la aplicacion del men
     def exec_uminus(self, arg1, result):
 ```
 
-Las 
+Luego van los metodos de control de flujo, que cambian al instruction pointer a su siguiente posicion dependiendo de como evalue cada condicion, reciben como argumentos a la direccion de memoria con el resultado de la condicion, y al indice al que debe de ser movido el instruction pointer, si la condicion solicitada por el salto se cumple, se cambia la posicion del instruction pointer.
+
+```Python
+    # Control de flujo
+    # GOTO
+    def exec_goto(self, target):
+        self.ip = target
+    
+    # GOTOF, cambia el instruction pointer al siguiente cuadruplo si la condicion es falsa (0)
+    def exec_gotof(self, condition, target):
+        val = self.get_value(condition)
+        if val == 0:
+            self.ip = target
+            return True
+        return False
+    
+    # GOTOT, cambia el instruction pointer al siguiente cuadruplo si la condicion es verdadera (1)
+    def exec_gotot(self, condition, target):
+        val = self.get_value(condition)
+        if val != 0:
+            self.ip = target
+            return True
+        return False
+```
+
+**def exec_print(self, arg1):** Este metodo verifica si el argumento que se va a imprimir es un string, si lo es, se limpia eliminando las comillas y de esa manera solo imprimir el contenido del string, luego se imprime el contenido usando la funcion print de python con el argumento end=' ' para que el valor se imprima junto con un espacio en lugar de un \n (newline)
+
+```Python 
+    # Imprimir el valor de arg1
+    def exec_print(self, arg1):
+        val = self.get_value(arg1)
+        # Si es string, remover comillas
+        if isinstance(val, str) and val.startswith('"') and val.endswith('"'):
+            val = val[1:-1]
+        print(val, end=' ')
+```
+
+**def exec_era(self, func_name):** Utiliza a la funcion create_context para preparar un espacio de la memoria para la funcion y luego registra a su contexto como pendiente 
+
+```Python
+    # Preparamos el espacio de memora para la funcion y creamos un nuevo contexto de ejecucion
+    def exec_era(self, func_name):
+        context = self.create_context(func_name)
+        # Guardamos el contexto pendiente, se activara con GOSUB
+        self.pending_context = context
+```
+
+**def exec_param(self, arg_address, param_address):** Este metodo pasa un argumento a un parametro de una funcion, primero se obtiene el valor del argumento, luego utilizamos a hasattr para verificar si pending_context existe, ya que este atributo se crea dinamicamente en exec_era y se elimina en exec_gosub, y si intentamos acceder a el cuando no existe, python nos arrojaria un attribute error
+
+```Python 
+    # Pasamos un argumento al parametro de la funcion 
+    def exec_param(self, arg_address, param_address):
+        value = self.get_value(arg_address)
+        # Guardamos en el contexto pendiente como local
+        # Los parametros siempre van al contexto local de la funcion
+        if hasattr(self, 'pending_context'): # Revisamos que el atributo exista
+            # Usar local para todos los parametros, independiente del rango de direccion
+            self.pending_context['local'][param_address] = value
+    
+```
+
+**def exec_gosub(self, func_name, start_address):** Verificamos si hay algun contexto pendiente, si lo hay, le asignamos el indice despues del instruction pointer como salto ya que seria la siguiente instruccion despues de la ejecucion de la funcion, luego empujamos el contexto a la pila de ejecucion, eliminamos a el atributo pending context ya que el contexto ya esta en la pila de ejecucion, y movemos al instruction pointer al inicio de la funcion, si el atributo pending context no existe, solo seria necesario mover el instruction pointer al inicio de la funcion
+
+```Python
+    # GOSUB
+    # Saltamos a la funcion y activamos el contexto
+    def exec_gosub(self, func_name, start_address):
+        if hasattr(self, 'pending_context'):
+            self.pending_context['return_address'] = self.ip + 1
+            self.push_context(self.pending_context)
+            del self.pending_context
+        
+        self.ip = start_address
+```
+
+**def exec_endfunc(self):** Termina la ejecucion del contexto anterior, primero sacamos el siguiente salto del contexto de la funcion, sacamos el contexto de la pila de contexto y movemos el instruction pointer a la siguiente instruccion
+
+```Python
+    # ENDFUNC
+    # Termina la ejecucion de la funcion, restaura el contexto anterior y regresa a la direccion de retorno
+    def exec_endfunc(self):
+        return_address = self.current_context['return_address']
+        self.pop_context()
+        self.ip = return_address
+```
+
+**def exec_return(self, value_address, return_var_address):** Asigna el valor de retorno a la direccion correspondiente a la funcion 
+```Python
+    # RETURN
+    # Asigna el valor de retorno a la variable local de la funcion
+    def exec_return(self, value_address, return_var_address):
+        value = self.get_value(value_address)
+        
+        self.set_value(return_var_address, value)
+        if hasattr(self, 'debug') and self.debug:
+            print(f"RETURN: {value} -> direccion {return_var_address}")
+```
+
+**def print_memory_state(self):** Esta funcion imprime a las direcciones de memoria del contexto actual, sea main, o el de una funcion
+
+```Python
+    # Helpers
+    def print_memory_state(self):
+        print("\nEstado de la memoria:")
+        print("Global:", self.memory['global'])
+        print("Constantes:", self.memory['const'])
+        if self.current_context:
+            print("Contexto actual:", self.current_context['name'])
+            print("  Local:", self.current_context['local'])
+            print("  Temp:", self.current_context['temp'])  
+```
+
+Por ultimo, la maquina virtual cuenta con un singleton para garantizar la existencia de una unica instancia de la maquina virtual para evitar la necesidad de recibirla como parametro para usarse en otras partes del codigo.
+
+## main.py 
+
+Esta es la clase encargada de administrar e integrar todos los modulos del compilador y la maquina virtual.
+
+El constructor inicializa a los singletons de los modulos como atributos de la clase y define un atributo booleano llamado debug el cual nos permitira ocultar la visualizacion de los prints de debug.
+
+El metodo compile es el encargado de compilar el codigo, recibe al programa como argumento, y empieza por vaciar al generador de codigo intermedio, al analizador semantico, y a la memoria de ejecucion para evitar que hayan variables, direcciones de memoria, cuadruplos y funciones ajenas al programa que se desea ejecutar, luego se llama a la funcion parse() del parser generado con yacc para compilar el programa y asi llenar la tabla de variables, el directorio de funcuiones y generar los cuadruplos necesarios para la ejecucion del codigo, si el parseo procede, se revisa si hay errores semanticos utilizando al metodo has_errors de el analizador semantico, de haber errores, la funcion arrojara false e imprimira los errores detectados, de otra manera, la funcion arrojara true, indicando que la compilacion fue exitosa
+
+```Python
+    def compile(self, code):
+        if self.debug:
+            print(f"Compilando...:\n{code}\n")
+        # Reset de todos los componentes
+        self.intermediate_code_generator.reset()
+        self.semantic_analyzer.reset()
+        self.excecution_memory.reset()
+        
+        try:
+            # Parseamos el codigo
+            result = self.parser.parse(code)
+            if self.debug:
+                print(f"Resultado del parseo: {result}")
+            if result is None:
+                print("Error: No se pudo parsear el codigo")
+                return False
+            
+            # Analisis semantico
+            if self.semantic_analyzer.has_errors():
+                print("Errores semanticos encontrados:")
+                self.semantic_analyzer.print_errors() 
+                return False
+            
+            return True  # Compilacion exitosa
+            
+        except Exception as e:
+            print(f"Error durante la compilacion: {e}")
+            return False
+```
+
+La funcion run toma a los cuadruplos y a las constantes resultantes y se las da a la maquina virtual para la ejecutar a los cuadruplos, y por ulto
+
+```Python
+    def run(self):
+        # Cargar cuadruplos
+        self.virtual_machine.load_quads(self.intermediate_code_generator.quads)
+        self.virtual_machine.load_constants(self.excecution_memory.const_dict)
+        
+        try:
+            self.virtual_machine.execute()
+        except Exception as e:
+            print(f'Error durante la ejecucion: {e}')
+```
+
+Por ultimo, compile_and_run junta a las funciones de compilacion y ejecucion, primero se ejecuta la funcion compile, si arroja true, ejecuta al metodo run
+
+```Python 
+    def compile_and_run(self, code):
+        if self.compile(code):
+            if self.debug:
+                print("MODO DEBUG")
+                self.print_function_table()
+                self.print_quads()
+                self.print_memory()
+                
+            self.run()
+```
+
+El resto de funciones son funciones auxiliares que imprimen distintos aspectos del compilador y activan el modo debug
+
+```Python 
+    def print_quads(self):
+        self.intermediate_code_generator.print_quads()
+        
+    def print_function_table(self):
+        self.intermediate_code_generator.print_function_table()
+    
+    def print_memory(self):
+        print("\nMemoria: ")
+        print("Variables:", self.excecution_memory.var_dict)
+        print("Constantes:", self.excecution_memory.const_dict)
+        print("\n")
+        
+    def enable_debug(self):
+        self.debug = True
+        self.intermediate_code_generator.debug = True
+```
+
+Por ultimo esta el entry point de el proyecto, esta funcion lee argumentos desde la linea de comando, el primer argumento es la ruta al archivo con extension .patito, y el segundo argumento es un flag opcional --debug que habilita los prints de debuging del compilador, si el programa no recibe parametros, usa un codigo por defecto el cual esta escrito dentro del entry point. Primero se crea una instancia de la clase Compiler, luego se verifica si hay argumentos dentro de la funcion, si los hay, primero se lee al archivo y se guarda a su contenido en una variable, luego se verifica si se agrego al flag de debug como argumento, si esta presente, cambia el valor de debug en la clase del compilador, por ultimo, se le administra el codigo al compilador para que sea compilado y ejecutado.
+
+```Python
+def main():
+    compiler = Compiler()
+    
+    # Determinar el codigo fuente a usar
+    if len(sys.argv) > 1:
+        # Leer desde archivo
+        file = sys.argv[1]
+        
+        # Flag de debug
+        if "--debug" in sys.argv or "-d" in sys.argv:
+            compiler.enable_debug()
+        try:
+            with open(file, 'r') as f:
+                code = f.read()
+        except FileNotFoundError:
+            print(f"Error: No se encontro el archivo '{file}'")
+            return
+    else:
+        # Programa de ejemplo
+        code = """program ejemplo;
+        var
+            x, y : int;
+        main {
+            x = 5;
+            y = 10;
+            print("Suma:", x + y);
+        }
+        end"""
+        print("Usando programa de ejemplo")
+        
+    # Compilar
+    compiler.compile_and_run(code=code)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+# Prompts utilizados 
+
+A lo largo de la entrega consulte a Claude para despejar mis dudas durante la elaboracion del compilador
+
+"Como funcionan los indices en PLY?, es decir, que representa cada indice y por que el resulado se
+"Por que las temporales necesitan un contador único?"
+"Si voy a desarrollar una register based vm, que estructura dinamica deberia de usar para guardar mis direcciones de memoria?, estaba considerando utilizar un diccionario de diccionarios o un hashmap cuyos valores fueran listas doblemente enlazadas, que tan alejada esta esta idea?, es importante aclarar que aun no llego al punto de desarrollar la maquina virtual, solo voy a asignarles direcciones de memoria a mis varoables y constantes"
+"Como funciona la memoria de ejecucion?"
+"Como se integra comunmente la memoria de ejecucion?"
+"Cual es la diferencia entre manejar la creacion de temporales desde la memoria de ejecucion y el generador de codigo intermedio?"
+"Por que es posible acceder a partes anteriores de gramaticas desde otras reglas gramaticales y por que se usan indices negativos?"
+"Como funciona una pila de ejecucion?"
+"Inclui de manera correcta a el return de mis funciones en factor para poder usar a al valor de retorno de la funcion en operaciones sin tener la necesidad de crear una variable?"
+"Estoy almacenando de manera correcta a los valores de retorno de mis funciones?, y si que deberia de tomar en cuenta para que el contexto no falle en casos de recursion?"

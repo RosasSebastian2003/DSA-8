@@ -27,6 +27,7 @@ class Compiler:
         self.excecution_memory.reset()
         
         try:
+            # Parseamos el codigo
             result = self.parser.parse(code)
             if self.debug:
                 print(f"Resultado del parseo: {result}")
@@ -34,12 +35,13 @@ class Compiler:
                 print("Error: No se pudo parsear el codigo")
                 return False
             
+            # Analisis semantico
             if self.semantic_analyzer.has_errors():
                 print("Errores semanticos encontrados:")
-                self.semantic_analyzer.print_errors()
+                self.semantic_analyzer.print_errors() 
                 return False
             
-            return True  # Compilación exitosa
+            return True  # Compilacion exitosa
             
         except Exception as e:
             print(f"Error durante la compilacion: {e}")
@@ -80,7 +82,6 @@ class Compiler:
                 self.print_memory()
                 
             self.run()
-
 
 def main():
     compiler = Compiler()
